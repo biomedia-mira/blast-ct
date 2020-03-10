@@ -1,5 +1,5 @@
 # BLAST-CT
-**B**rain **L**esion **a**nd **S**egmentation **T**ool for **C**omputed **T**omography
+**B**rain **L**esion **A**nalysis and **S**egmentation **T**ool for **C**omputed **T**omography
 
 This repository will soon provide access to the source code and pre-trained models for our traumatic brain injury image segmentation tool for 3D computed tomography scans.
 
