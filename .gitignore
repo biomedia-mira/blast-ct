@@ -1,0 +1,7 @@
+.idea
+venv
+_unused
+*/__pycache__/*
+*.pyc
+*.nii.gz
+*.nii
