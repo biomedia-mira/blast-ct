@@ -1,11 +1,6 @@
 from abc import ABC
 import torch.nn as nn
 import torch.nn.functional as F
-import torch
-import numpy as np
-
-
-# output = (input * 2 * padding - kernel_size - (kernel_size - 1) (dilation - 1)) / stride + 1
 
 
 def calculate_convolution_output_size(input_size, conv):
@@ -232,16 +227,3 @@ class UpConv(BiomedicalModule):
     def update_fov_and_scale_factor(self, fov, scale_factor):
         scale_factor = tuple(s0 / float(s1) for s0, s1 in zip(scale_factor, self.scale_factor))
         return fov, scale_factor
-
-
-class TrainableTanhNormalization(nn.Module):
-    def __init__(self, num_filters, initial_slope_std=.01, initial_bias_std=0.01):
-        super().__init__()
-        # self.m = nn.Parameter(torch.tensor(np.random.normal(0, initial_slope_std, num_filters), dtype=torch.float32))
-        # self.b = nn.Parameter(torch.tensor(np.random.normal(0, initial_bias_std, num_filters), dtype=torch.float32))
-        self.m = nn.Parameter(torch.tensor(np.ones(num_filters) * 0.001, dtype=torch.float32))
-        self.b = nn.Parameter(torch.tensor(np.zeros(num_filters), dtype=torch.float32))
-
-    def forward(self, x):
-        shape = (1, len(self.m)) + (1,) * len(x.shape[2:])
-        return (torch.tanh(self.m.view(shape) * x + self.b.view(shape)) + 1.) / 2.

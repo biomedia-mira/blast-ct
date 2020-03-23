@@ -17,7 +17,6 @@ def run_job(job_dir, train_csv_path, valid_csv_path, config_file, num_epochs, de
         os.makedirs(job_dir)
     set_random_seed(random_seed)
     device = set_device(device)
-    lock = torch.ones((1,), device=device)  # lock device
     print('Setting up configuration...')
     task = config['data']['task']
     model = get_model(config)
@@ -43,10 +42,6 @@ def set_random_seed(random_seed):
     random.seed(random_seed)
     os.environ['PYTHONHASHSEED'] = str(random_seed)
     torch.manual_seed(random_seed)
-    # torch.cuda.manual_seed(random_seed)
-    # torch.cuda.manual_seed_all(random_seed)  # if you are using multi-GPU.
-    # torch.backends.cudnn.benchmark = False
-    # torch.backends.cudnn.deterministic = True
 
 
 def set_device(device):

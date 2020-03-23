@@ -12,31 +12,6 @@ class Transformation(object):
         raise NotImplementedError
 
 
-class FlattenBackground(Transformation):
-    """
-    Set values a below the lower_bound and above the upper_bound to 0. This seems to help
-    """
-
-    def __init__(self, lower_bound=-1., upper_bound=1.):
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-
-    def __call__(self, image, target, sampling_mask):
-        image[image <= self.lower_bound] = 0
-        image[image >= self.upper_bound] = 0
-        return image, target, sampling_mask
-
-
-class RelabelBraTS(Transformation):
-    def __init__(self):
-        self.label_mapping = {(0, ): 0, (1, ): 1, (2, ): 2, (3, 4): 3}
-
-    def __call__(self, image, target, sampling_mask):
-        new_target = np.zeros_like(target)
-        for old_labels, new_label in self.label_mapping.items():
-            new_target[np.isin(target, old_labels)] = new_label
-        return image, new_target, sampling_mask
-
 
 class IntensityWindowNormalization(Transformation):
     def __init__(self, lower_bound, upper_bound, map_upper_bound_to_lower_bound=False):
