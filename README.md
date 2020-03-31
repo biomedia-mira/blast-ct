@@ -1,7 +1,7 @@
 # BLAST-CT
 **B**rain **L**esion **A**nalysis and **S**egmentation **T**ool for **C**omputed **T**omography
 
-This repository provides the source code for our traumatic brain injury image segmentation tool for 3D computed tomography scans. Pre-trained models will be available soon together with a detailed tutorial on how to use the code.
+This repository provides the source code of our traumatic brain injury image segmentation tool for 3D computed tomography scans. Pre-trained models will be available soon together with detailed instructions on how to use the code on new data.
 
 An article describing our method and results is currently under review.
 
