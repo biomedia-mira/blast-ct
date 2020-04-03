@@ -1,23 +1,23 @@
-import models
-import trainer.losses
+from . import models
+from .trainer import losses
 import torch.nn
 from torch.utils.data.dataloader import DataLoader
-from nifti.datasets import PatchWiseNiftiDataset, FullImageToOverlappingPatchesNiftiDataset, worker_init_fn
-from nifti.savers import NiftiPatchSaver
-import nifti.patch_samplers
-import nifti.transformation
-import nifti.augmention
-from trainer.metrics import Loss
-from trainer.metrics import SegmentationMetrics
-from trainer.hooks import TrainingEvaluator, ValidationEvaluator, ModelSaverHook, NaNLoss
+from .nifti.datasets import PatchWiseNiftiDataset, FullImageToOverlappingPatchesNiftiDataset, worker_init_fn
+from .nifti.savers import NiftiPatchSaver
+from .nifti import patch_samplers
+from .nifti import transformation
+from .nifti import augmention
+from .trainer.metrics import Loss
+from .trainer.metrics import SegmentationMetrics
+from .trainer.hooks import TrainingEvaluator, ValidationEvaluator, ModelSaverHook, NaNLoss
 
 
 def get_augmentation(augmentation_dict):
-    return [getattr(nifti.augmention, name)(**kwargs) for name, kwargs in augmentation_dict.items()]
+    return [getattr(augmention, name)(**kwargs) for name, kwargs in augmentation_dict.items()]
 
 
 def get_transformation(transformation_dict):
-    return [getattr(nifti.transformation, name)(**kwargs) for name, kwargs in transformation_dict.items()]
+    return [getattr(transformation, name)(**kwargs) for name, kwargs in transformation_dict.items()]
 
 
 def get_train_loader(config, model, train_csv_path, use_cuda):
@@ -30,7 +30,7 @@ def get_train_loader(config, model, train_csv_path, use_cuda):
 
     sampler_type = list(config['training']['sampler'].keys())[0]
     config['training']['sampler'][sampler_type].update({'augmentation': patch_augmentation})
-    sampler_class = getattr(nifti.patch_samplers, sampler_type)
+    sampler_class = getattr(patch_samplers, sampler_type)
     sampler = sampler_class(input_patch_size, output_patch_size, **config['training']['sampler'][sampler_type])
 
     sampling_mask = config['data']['sampling_mask'] if 'sampling_mask' in config['data'] else None
@@ -68,7 +68,7 @@ def get_valid_loader(config, model, test_csv_path, use_cuda):
     sample_weight = config['data']['sample_weight'] if 'sample_weight' in config['data'] else None
 
     sampler_type = list(config['training']['sampler'].keys())[0]
-    sampler_class = getattr(nifti.patch_samplers, sampler_type)
+    sampler_class = getattr(patch_samplers, sampler_type)
     sampler = sampler_class(input_patch_size, output_patch_size, **config['training']['sampler'][sampler_type])
 
     # set sequential to True to reduce disk access,
@@ -156,7 +156,7 @@ def get_model(config):
 
 def get_loss(config):
     loss_type = list(config['loss'].keys())[0]
-    loss_class = getattr(trainer.losses, loss_type)
+    loss_class = getattr(losses, loss_type)
     loss = loss_class(**config['loss'][loss_type])
     return loss
 

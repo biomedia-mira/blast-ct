@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 import time
-from trainer.logger import get_logger
+from .logger import get_logger
 
 
 def predict_exclusive(logits):

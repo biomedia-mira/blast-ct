@@ -1,4 +1,6 @@
 import numpy as np
+
+
 # All transformations can't alter state after __init__ because of dataset class when num_workers > 0
 
 
@@ -10,7 +12,6 @@ class Transformation(object):
 
     def __call__(self, image, target, sampling_mask):
         raise NotImplementedError
-
 
 
 class IntensityWindowNormalization(Transformation):

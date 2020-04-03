@@ -6,9 +6,9 @@ import numpy as np
 import math
 import random
 import torch.utils.data as data
-from nifti.patch_samplers import PatchSampler
-from nifti.transformation import Transformation
-from nifti.augmention import RandomAugmentation
+from .patch_samplers import PatchSampler
+from .transformation import Transformation
+from .augmention import RandomAugmentation
 
 
 # numpy.random state is discarded at the end of a worker process and does not propagate between workers or to the
@@ -228,7 +228,6 @@ class FullImageToOverlappingPatchesNiftiDataset(NiftiDataset, data.IterableDatas
                          task='segmentation')
         self.patch_sampler = PatchSampler(image_patch_shape, target_patch_shape)
         self.target_patch_shape = target_patch_shape
-        self.overlap_factor = overlap_factor
         self.index_mapping = []
         self.image_mapping = {}
         for image_index, row in self.data_index.iterrows():

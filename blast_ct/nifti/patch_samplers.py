@@ -1,5 +1,5 @@
 import numpy as np
-from nifti.augmention import RandomAugmentation
+from .augmention import RandomAugmentation
 
 
 # All patch samplers can't alter state after __init__ because of dataset class when num_workers > 0

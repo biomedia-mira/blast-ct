@@ -2,8 +2,8 @@ import os
 import torch
 import numpy as np
 import SimpleITK as sitk
-from nifti.datasets import FullImageToOverlappingPatchesNiftiDataset
-from nifti.patch_samplers import get_patch_and_padding
+from .datasets import FullImageToOverlappingPatchesNiftiDataset
+from .patch_samplers import get_patch_and_padding
 
 
 def save_image(output_array, input_image, path):
@@ -72,7 +72,6 @@ class NiftiPatchSaver(object):
         target_shape, center_points = self.dataset.image_mapping[self.image_index]
         target_patch_shape = self.dataset.patch_sampler.target_patch_size
         patches_in_image = len(center_points)
-        overlap_factor = self.dataset.overlap_factor
 
         if len(self.patches) >= patches_in_image:
             to_write = {}
@@ -80,7 +79,7 @@ class NiftiPatchSaver(object):
             input_image = sitk.ReadImage(self.dataset.data_index.loc[self.image_index][self.dataset.channels[0]])
             patches = list(torch.stack(self.patches[0:patches_in_image]).numpy())
             self.patches = self.patches[patches_in_image:]
-            reconstruction = reconstruct_image(patches, target_shape, center_points, target_patch_shape, overlap_factor)
+            reconstruction = reconstruct_image(patches, target_shape, center_points, target_patch_shape)
 
             if self.write_prob_maps:
                 to_write['prob_maps'] = reconstruction

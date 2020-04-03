@@ -4,8 +4,8 @@ import re
 import torch
 from abc import ABC
 import numpy as np
-from trainer.metrics import to_np_cpu
-from trainer.metrics import Metric
+from .metrics import to_np_cpu
+from .metrics import Metric
 from torch.utils.tensorboard import SummaryWriter
 
 

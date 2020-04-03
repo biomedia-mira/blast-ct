@@ -1,9 +1,10 @@
 import os
 import argparse
 import json
-from trainer.inference import ModelInference, ModelInferenceEnsemble
-from train import get_model, get_test_loader, set_device
-from nifti.savers import NiftiPatchSaver
+from .trainer.inference import ModelInference, ModelInferenceEnsemble
+from .train import set_device
+from .read_config import get_model, get_test_loader
+from .nifti.savers import NiftiPatchSaver
 
 
 def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, overwrite):
