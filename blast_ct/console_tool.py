@@ -19,8 +19,8 @@ def path(string):
 
 def console_tool():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', metavar='input', type=path, help='Path to input image.')
-    parser.add_argument('--output', metavar='output', type=str, help='Path to output image.')
+    parser.add_argument('--input', metavar='input', type=path, help='Path to input image.', required=True)
+    parser.add_argument('--output', metavar='output', type=str, help='Path to output image.', required=True)
     parser.add_argument('--ensemble', help='Whether to use the ensemble (slower but more precise)', type=bool,
                         default=False)
     parser.add_argument('--device', help='GPU device index (int) or \'cpu\' (str)', default='cpu')
@@ -39,7 +39,7 @@ def console_tool():
     job_dir = '/tmp/blast_ct'
     os.makedirs(job_dir, exist_ok=True)
     test_csv_path = os.path.join(job_dir, 'test.csv')
-    pd.DataFrame(data=[[0, parse_args.input]], columns=['id', 'image']).to_csv(test_csv_path)
+    pd.DataFrame(data=[['im_0', parse_args.input]], columns=['id', 'image']).to_csv(test_csv_path, index=False)
 
     model = get_model(config)
     test_loader = get_test_loader(config, model, test_csv_path, use_cuda=not device.type == 'cpu')
@@ -52,5 +52,5 @@ def console_tool():
         model_paths = [os.path.join(install_dir, f'examples/saved_models/model_{i:d}.pt') for i in range(1, 13)]
         ModelInferenceEnsemble(job_dir, device, model, saver, model_paths, task='segmentation')(test_loader)
     output_dataframe = pd.read_csv(os.path.join(job_dir, 'predictions/prediction.csv'))
-    shutil.copyfile(output_dataframe.loc[0, 'prediction'], parse_args.output)
+    shutil.copyfile(output_dataframe.iloc[0]['prediction'], parse_args.output)
 
