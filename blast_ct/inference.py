@@ -36,6 +36,11 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
 
 
 def inference():
+    install_dir = os.path.dirname(os.path.realpath(__file__))
+    default_config = os.path.join(install_dir, 'data/config.json')
+    saved_model_paths = [os.path.join(install_dir, f'data/saved_models/model_{i:d}.pt') for i in range(1, 13)]
+    default_model_paths = ' '.join(saved_model_paths)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--job-dir',
                         required=True,
@@ -48,6 +53,7 @@ def inference():
                         type=str,
                         help='Path to test csv file with paths of images and masks.')
     parser.add_argument('--config-file',
+                        default=default_config,
                         type=str,
                         help='A json configuration file for the job (see example files)')
     parser.add_argument('--device',
@@ -55,6 +61,7 @@ def inference():
                         default='cpu',
                         help='Device to use for computation')
     parser.add_argument('--saved-model-paths',
+                        default=default_model_paths,
                         type=str,
                         help='Path to saved model or list of paths separated by spaces.')
     parser.add_argument('--overwrite',
@@ -64,11 +71,4 @@ def inference():
 
     parse_args, unknown = parser.parse_known_args()
 
-    parse_args = parse_args.__dict__
-    install_dir = os.path.dirname(os.path.realpath(__file__))
-    if 'config_file' not in parse_args and 'saved_model_paths' not in parse_args:
-        parse_args['config_file'] = os.path.join(install_dir, 'data/config.json')
-        saved_model_paths = [os.path.join(install_dir, f'data/saved_models/model_{i:d}.pt') for i in range(1, 13)]
-        parse_args['saved_model_paths'] = ' '.join(saved_model_paths)
-
-    run_inference(**parse_args)
+    run_inference(**parse_args.__dict__)
