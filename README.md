@@ -15,12 +15,12 @@ We also make available a model that has been trained on a set of 184 annotated C
 
 ## Installation
 
-###Linux and MacOS
+### Linux and MacOS
 On a fresh python3 virtual environment
 
 `pip install git+https://github.com/biomedia-mira/blast-ct.git`
 
-###Windows
+### Windows
 
 # Usage with examples
 
@@ -31,7 +31,7 @@ cd blast-ct-example
 svn checkout "https://github.com/biomedia-mira/blast-ct/trunk/blast_ct/data/"
 ```
 
-##Inference on one image
+## Inference on one image
 To run inference on one image using our pre-trained models:
 
 `blast-ct --input <path-to-input-image> --output <path-to-output-image> --device <device-id>`
@@ -43,14 +43,14 @@ indexing a cuda capable GPU on your machine. Defaults to CPU;
 4. pass `--ensemble true`: to use an ensemble of 12 models which improves segmentation quality but slows down inference
  (recommended for gpu).
 
-#####Working example:
+##### Working example:
 
 In the `blast-ct-example` directory run (might take up to an hour on CPU):
 
 `blast-ct --input data/scans/scan_0_image.nii.gz --output scan_0_prediction.nii.gz`
 
 
-##Inference on multiple images
+## Inference on multiple images
 To run inference on multiple images using our ensemble of pre-trained models:
 
 ```
@@ -67,14 +67,14 @@ images to be processed;
 indexing a cuda capable GPU on your machine. Defaults to CPU;
 4. pass `--overwrite true`: to write over existing `job-dir`.
 
-#####Working example:
+##### Working example:
 
 In the `blast-ct-example` directory run (GPU example):
 
 `blast-ct-inference --job-dir my-inference-job --test-csv-path data/data.csv --device 0`
 
 
-##Training models on your own data
+## Training models on your own data
 
 To train your own model:
 
@@ -102,7 +102,7 @@ Pass more than one to train multiple models one after the other.
 8. pass `--overwrite true`: to write over existing `job-dir`.
 
 
-#####Working example:
+##### Working example:
 
 In the `blast-ct-example` directory run:
 ```
@@ -117,7 +117,7 @@ blast-ct-train \
 ```
 
 
-##Inference with your model
+## Inference with your model
 
 To run inference with your own models and config use
 ```
@@ -138,7 +138,7 @@ indexing a cuda capable GPU on your machine. Defaults to CPU;
  `--saved-model-paths` is a list of pre-trained model paths;
 5. pass `--overwrite true`: to write over existing `job-dir`.
 
-#####Working example:
+##### Working example:
 
 In the `blast-ct-example` directory run (GPU example):
 
