@@ -1,7 +1,7 @@
 # BLAST-CT
 **B**rain **L**esion **A**nalysis and **S**egmentation **T**ool for **C**omputed **T**omography
 
-This repository provides our deep learning image segmentation tool for traumatic brain injuries in 3D computed tomography scans.
+This repository provides our deep learning image segmentation tool for traumatic brain injuries in 3D CT scans.
 
 An article describing our method and results is currently under review.
 
