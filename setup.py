@@ -17,8 +17,8 @@ setuptools.setup(
     entry_points={
         'console_scripts': [
             'blast-ct = blast_ct.console_tool:console_tool',
-            'blast-ct-inference = blast_ct.console_tool:inference',
-            'blast-ct-train = blast_ct.console_tool:train'
+            'blast-ct-inference = blast_ct.inference:inference',
+            'blast-ct-train = blast_ct.train:train'
         ]
     },
     install_requires=[

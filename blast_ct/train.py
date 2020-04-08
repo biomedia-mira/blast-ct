@@ -69,7 +69,7 @@ def run_ensemble(job_dir, train_csv_path, valid_csv_path, config_file, num_epoch
         run_job(run_dir, train_csv_path, valid_csv_path, config_file, num_epochs, device, random_seed)
 
 
-if __name__ == "__main__":
+def train():
     parser = argparse.ArgumentParser()
     parser.add_argument('--job-dir',
                         required=True,

@@ -35,7 +35,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
         ModelInferenceEnsemble(job_dir, device, model, saver, saved_model_paths, task)(test_loader)
 
 
-if __name__ == "__main__":
+def inference():
     parser = argparse.ArgumentParser()
     parser.add_argument('--job-dir',
                         required=True,

@@ -47,7 +47,7 @@ indexing a cuda capable GPU on your machine. Defaults to CPU;
 
 In the `blast-ct-example` directory run (might take up to an hour on CPU):
 
-`blast-ct --input data/scans/scan_0_image.nii.gz --output scan_0_prediction.nii.gz`
+`blast-ct --input data/scans/scan_0/scan_0_image.nii.gz --output scan_0_prediction.nii.gz`
 
 
 ## Inference on multiple images
