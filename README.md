@@ -13,10 +13,10 @@ The provided source code enables training and testing our convolutional neural n
 
 We also make available a model that has been trained on a set of 184 annotated CT scans obtained from multiple clinical sites. 
 This model has been validated on a set of 655 CT scans. Additionally, our model has been validated on an external, independent set of scans from 500 patients from the CQ500 dataset.
-**To use pre-trained models on your own images they must be first resamped to 1x1x1x mm resolution.**
+**To use pre-trained models on your own images they must be first resamped to 1x1x1 mm resolution.**
 The output of this tool when used with the provided pre-trained models will be a nifti with integer labels representing:
 1. Intraparenchymal haemorrhage (IPH);
-2. Extra-axial haemorrhage (EAH)
+2. Extra-axial haemorrhage (EAH);
 3. Perilesional oedema;
 4. Intraventricular haemorrhage (IVH).
 
@@ -28,6 +28,17 @@ On a fresh python3 virtual environment
 `pip install git+https://github.com/biomedia-mira/blast-ct.git`
 
 ### Windows
+If you are using miniconda, create a new conda environment and install PyTorch
+
+```
+conda create -n blast-ct python=3
+conda activate blast-ct
+conda install pytorch torchvision cudatoolkit=10.1 -c pytorch
+```
+
+Then install `blast-ct` via
+
+`pip install git+https://github.com/biomedia-mira/blast-ct.git`
 
 # Usage with examples
 
