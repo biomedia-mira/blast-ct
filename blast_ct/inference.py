@@ -55,7 +55,6 @@ def inference():
                         default='cpu',
                         help='Device to use for computation')
     parser.add_argument('--saved-model-paths',
-                        required=True,
                         type=str,
                         help='Path to saved model or list of paths separated by spaces.')
     parser.add_argument('--overwrite',
