@@ -11,7 +11,14 @@ The provided source code enables training and testing our convolutional neural n
 
 ## Pre-trained model
 
-We also make available a model that has been trained on a set of 184 annotated CT scans obtained from multiple clinical sites. This model has been validated on a set of 655 CT scans. Additionally, our model has been validated on an external, independent set of scans from 500 patients from the CQ500 dataset.
+We also make available a model that has been trained on a set of 184 annotated CT scans obtained from multiple clinical sites. 
+This model has been validated on a set of 655 CT scans. Additionally, our model has been validated on an external, independent set of scans from 500 patients from the CQ500 dataset.
+**To use pre-trained models on your own images they must be first resamped to 1x1x1x mm resolution.**
+The output of this tool when used with the provided pre-trained models will be a nifti with integer labels representing:
+1. Intraparenchymal haemorrhage (IPH);
+2. Extra-axial haemorrhage (EAH)
+3. Perilesional oedema;
+4. Intraventricular haemorrhage (IVH).
 
 ## Installation
 
@@ -24,7 +31,7 @@ On a fresh python3 virtual environment
 
 # Usage with examples
 
-If you wish to follow along with examples please run the following in your bash console:
+If you wish to follow along with working examples please run the following in your bash console:
 ```
 mkdir blast-ct-example
 cd blast-ct-example
@@ -104,10 +111,10 @@ Pass more than one to train multiple models one after the other.
 
 ##### Working example:
 
-In the `blast-ct-example` directory run:
+In the `blast-ct-example` directory run (GPU example, takes time):
 ```
 blast-ct-train \
-    --job-dir my-custom-inference-job \
+    --job-dir my-training-job \
     --config-file data/config.json \
     --train-csv-path data/data.csv \
     --valid-csv-path data/data.csv \
@@ -141,11 +148,14 @@ indexing a cuda capable GPU on your machine. Defaults to CPU;
 ##### Working example:
 
 In the `blast-ct-example` directory run (GPU example):
-
-`blast-ct-inference --job-dir my-custom-inference-job --config-file data/config.json --test-csv-path data/data.csv 
---device 0 --saved-model-paths "data/saved_models/model_1.pt data/saved_models/model_2.pt data/saved_models/model_6.pt"`
-
-
+```
+blast-ct-inference \
+    --job-dir my-custom-inference-job \
+    --config-file data/config.json \
+    --test-csv-path data/data.csv \
+    --device 0 \
+    --saved-model-paths "data/saved_models/model_1.pt data/saved_models/model_3.pt data/saved_models/model_6.pt
+```
 
 ## csv files for inference and training
 
