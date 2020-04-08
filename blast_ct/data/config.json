@@ -1,0 +1,94 @@
+{
+	"model": {
+		"DeepMedic": {
+			"fully_connected": [250, 250],
+			"feature_maps": [30, 30, 40, 40, 40, 40, 50, 50]
+		}
+	},
+	"data": {
+		"class_names": ["foreground", "IPH", "EAH", "oedema", "IVH"],
+		"task": "segmentation",
+		"channels": ["image"],
+		"target": "target",
+		"transformation": {
+			"IntensityWindowNormalization": {
+				"lower_bound": -15.0,
+				"upper_bound": 100.0
+			}
+		},
+		"input_channels": 1,
+		"num_classes": 5
+	},
+	"training": {
+		"batch_size": 10,
+		"patches_per_image": 20,
+		"images_per_epoch": 50,
+		"input_patch_size": [110, 110, 110],
+		"sampler": {
+			"ConditionalPatchSampler": {
+				"class_probabilities": [0.3, 0.175, 0.175, 0.175, 0.175],
+				"n_tries": 5
+			}
+		},
+		"augmentation": {
+			"RandomElasticDeformationCoarsePerlinNoise": {
+				"period": [5, 5, 5],
+				"prob": 0.5,
+				"alpha": 20.0,
+				"noise_shape": [400, 400, 400],
+				"num_maps": 3
+			}
+		},
+		"patch_augmentation": {
+			"RandomHistogramDeformation": {
+				"prob": 0.5
+			},
+			"RandomPatchRotation": {
+				"prob": 0.5,
+				"allowed_planes": [
+					[2, 1]
+				]
+			},
+			"RandomPatchFlip": {
+				"prob": 0.5,
+				"allowed_axis": [2, 1]
+			}
+		},
+		"num_workers": 4,
+		"max_cases_in_memory": 50
+	},
+	"valid": {
+		"batch_size": 64,
+		"input_patch_size": [110, 110, 110],
+		"patches_per_image": 40,
+		"images_per_epoch": 100,
+		"num_workers": 2,
+		"max_cases_in_memory": 2,
+		"eval_every": 100,
+		"keep_model_every": 400
+	},
+	"test": {
+		"batch_size": 64,
+		"input_patch_size": [110, 110, 110],
+		"num_workers": 1,
+		"eval_every": 2000
+	},
+	"loss": {
+		"CrossEntropyLoss": {}
+	},
+	"optimizer": {
+		"RMSprop": {
+			"lr": 0.001,
+			"momentum": 0.6,
+			"alpha": 0.9,
+			"weight_decay": 1e-4
+		}
+
+	},
+	"scheduler": {
+		"MultiStepLR": {
+			"milestones": [440, 640, 800, 900, 980, 1050],
+			"gamma": 0.5
+		}
+	}
+}

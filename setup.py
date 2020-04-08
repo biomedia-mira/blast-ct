@@ -13,10 +13,12 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/biomedia-mira/blast_ct",
     packages=['blast_ct', 'blast_ct.models', 'blast_ct.nifti', 'blast_ct.trainer'],
-    package_data={'': ['examples/saved_models/*.pt', 'examples/config.json', 'README.md']},
+    package_data={'': ['data/saved_models/*.pt', 'data/config.json', 'README.md']},
     entry_points={
         'console_scripts': [
-            'blast-ct = blast_ct.console_tool:console_tool'
+            'blast-ct = blast_ct.console_tool:console_tool',
+            'blast-ct-inference = blast_ct.console_tool:inference',
+            'blast-ct-train = blast_ct.console_tool:train'
         ]
     },
     install_requires=[

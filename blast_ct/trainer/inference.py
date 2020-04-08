@@ -49,7 +49,7 @@ class ModelInferenceEnsemble(ModelInference):
     def inference(self, dataloader):
         self.model.eval()
         for inputs in dataloader:
-            inputs = {key: value.to(self.device) for key, value in inputs.item()}
+            inputs = {key: value.to(self.device) for key, value in inputs.items()}
             state, prob_sum = {}, None
             for saved_model_path in self.saved_model_paths:
                 self.model.load_state_dict(torch.load(saved_model_path, map_location=self.device))

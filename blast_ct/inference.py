@@ -26,7 +26,6 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     test_loader = get_test_loader(config, model, test_csv_path, use_cuda)
     extra_output_names = config['test']['extra_output_names'] if 'extra_output_names' in config['test'] else None
     saver = NiftiPatchSaver(job_dir, test_loader, extra_output_names=extra_output_names)
-
     saved_model_paths = saved_model_paths.split()
     n_models = len(saved_model_paths)
     task = config['data']['task']
@@ -49,12 +48,11 @@ if __name__ == "__main__":
                         type=str,
                         help='Path to test csv file with paths of images and masks.')
     parser.add_argument('--config-file',
-                        required=True,
                         type=str,
                         help='A json configuration file for the job (see example files)')
     parser.add_argument('--device',
-                        required=True,
                         type=str,
+                        default='cpu',
                         help='Device to use for computation')
     parser.add_argument('--saved-model-paths',
                         required=True,
@@ -67,4 +65,11 @@ if __name__ == "__main__":
 
     parse_args, unknown = parser.parse_known_args()
 
-    run_inference(**parse_args.__dict__)
+    parse_args = parse_args.__dict__
+    install_dir = os.path.dirname(os.path.realpath(__file__))
+    if 'config_file' not in parse_args and 'saved_model_paths' not in parse_args:
+        parse_args['config_file'] = os.path.join(install_dir, 'data/config.json')
+        saved_model_paths = [os.path.join(install_dir, f'data/saved_models/model_{i:d}.pt') for i in range(1, 13)]
+        parse_args['saved_model_paths'] = ' '.join(saved_model_paths)
+
+    run_inference(**parse_args)

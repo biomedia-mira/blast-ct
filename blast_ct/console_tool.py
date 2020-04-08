@@ -30,7 +30,7 @@ def console_tool():
         raise IOError('Input file must be of type .nii or .nii.gz')
 
     install_dir = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(install_dir, 'examples/config.json'), 'r') as f:
+    with open(os.path.join(install_dir, 'data/config.json'), 'r') as f:
         config = json.load(f)
 
     device = set_device(parse_args.device)
@@ -46,11 +46,13 @@ def console_tool():
     saver = NiftiPatchSaver(job_dir, test_loader, write_prob_maps=False)
 
     if not parse_args.ensemble:
-        model_path = os.path.join(install_dir, 'examples/saved_models/model_1.pt')
+        model_path = os.path.join(install_dir, 'data/saved_models/model_1.pt')
         ModelInference(job_dir, device, model, saver, model_path, 'segmentation')(test_loader)
     else:
-        model_paths = [os.path.join(install_dir, f'examples/saved_models/model_{i:d}.pt') for i in range(1, 13)]
+        model_paths = [os.path.join(install_dir, f'data/saved_models/model_{i:d}.pt') for i in range(1, 13)]
         ModelInferenceEnsemble(job_dir, device, model, saver, model_paths, task='segmentation')(test_loader)
     output_dataframe = pd.read_csv(os.path.join(job_dir, 'predictions/prediction.csv'))
-    shutil.copyfile(output_dataframe.iloc[0]['prediction'], parse_args.output)
+    shutil.copyfile(output_dataframe.loc[0, 'prediction'], parse_args.output)
+    shutil.rmtree(job_dir)
+
 
