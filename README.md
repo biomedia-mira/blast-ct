@@ -1,20 +1,21 @@
 # BLAST-CT
 **B**rain **L**esion **A**nalysis and **S**egmentation **T**ool for **C**omputed **T**omography
 
-This repository provides the source code of our traumatic brain injury image segmentation tool for 3D computed tomography scans. Pre-trained models will be available soon together with detailed instructions on how to use the code on new data.
+This repository provides our deep learning image segmentation tool for traumatic brain injuries in 3D computed tomography scans.
 
 An article describing our method and results is currently under review.
 
 ## Source code
 
-The provided source code enables training and testing our convolutional neural network designed for multi-class brain lesion segmentation in CT.
+The provided source code enables training and testing of our convolutional neural network designed for multi-class brain lesion segmentation in head CT.
 
 ## Pre-trained model
 
 We also make available a model that has been trained on a set of 184 annotated CT scans obtained from multiple clinical sites. 
-This model has been validated on a set of 655 CT scans. Additionally, our model has been validated on an external, independent set of scans from 500 patients from the CQ500 dataset.
-**To use pre-trained models on your own images they must be first resamped to 1x1x1 mm resolution.**
-The output of this tool when used with the provided pre-trained models will be a nifti with integer labels representing:
+This model has been validated on an internal set of 655 CT scans, and on an external, independent set of scans from 500 patients from the publicly available CQ500 dataset. The results are presented and discussed in our paper (to appear soon).
+
+**To use the pre-trained model on your own images, these must be first resamped to 1x1x1 mm resolution.**
+The output of our lesion segmentation tool is a segmentation map in NIfTI format with integer labels representing:
 1. Intraparenchymal haemorrhage (IPH);
 2. Extra-axial haemorrhage (EAH);
 3. Perilesional oedema;
@@ -23,7 +24,7 @@ The output of this tool when used with the provided pre-trained models will be a
 ## Installation
 
 ### Linux and MacOS
-On a fresh python3 virtual environment
+On a fresh python3 virtual environment install `blast-ct` via
 
 `pip install git+https://github.com/biomedia-mira/blast-ct.git`
 
@@ -42,7 +43,7 @@ Then install `blast-ct` via
 
 # Usage with examples
 
-If you wish to follow along with working examples please run the following in your bash console:
+Please run the following in your bash console to obtain an example data that we use to illustrate the usage of our tool in the following:
 ```
 mkdir blast-ct-example
 cd blast-ct-example
@@ -50,7 +51,7 @@ svn checkout "https://github.com/biomedia-mira/blast-ct/trunk/blast_ct/data/"
 ```
 
 ## Inference on one image
-To run inference on one image using our pre-trained models:
+To run inference on one image using our pre-trained model:
 
 `blast-ct --input <path-to-input-image> --output <path-to-output-image> --device <device-id>`
 
@@ -63,7 +64,7 @@ indexing a cuda capable GPU on your machine. Defaults to CPU;
 
 ##### Working example:
 
-In the `blast-ct-example` directory run (might take up to an hour on CPU):
+Run the following in the `blast-ct-example` directory (might take up to an hour on CPU):
 
 `blast-ct --input data/scans/scan_0/scan_0_image.nii.gz --output scan_0_prediction.nii.gz`
 
@@ -87,7 +88,7 @@ indexing a cuda capable GPU on your machine. Defaults to CPU;
 
 ##### Working example:
 
-In the `blast-ct-example` directory run (GPU example):
+Run the following in the `blast-ct-example` directory (GPU example):
 
 `blast-ct-inference --job-dir my-inference-job --test-csv-path data/data.csv --device 0`
 
@@ -122,7 +123,7 @@ Pass more than one to train multiple models one after the other.
 
 ##### Working example:
 
-In the `blast-ct-example` directory run (GPU example, takes time):
+Run the following in the `blast-ct-example` directory (GPU example, takes time):
 ```
 blast-ct-train \
     --job-dir my-training-job \
@@ -158,7 +159,7 @@ indexing a cuda capable GPU on your machine. Defaults to CPU;
 
 ##### Working example:
 
-In the `blast-ct-example` directory run (GPU example):
+Run the following in the `blast-ct-example` directory (GPU example):
 ```
 blast-ct-inference \
     --job-dir my-custom-inference-job \
