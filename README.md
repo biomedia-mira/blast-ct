@@ -178,4 +178,4 @@ Each row in the csv represents a scan and must contain:
 3. (training only) A column named `target` containing a nifti file with the corresponding labels for training;
 4. (training only; optional) A column named `sampling_mask` containing a nifti file with the corresponding sampling mask 
 for training;
-See `data/data.csv` for a working example (with only one row).
+See `data/data.csv` for a working example with 10 rows/ids (even though in this example they point to the same image).
