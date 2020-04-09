@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="blast_ct",
-    version="0.1",
+    version="0.1.0",
     author="Miguel Monteiro",
     author_email="miguel.monteiro@imperial.ac.uk",
     description="Automatic segmentation of Traumatic Brain Injury (TBI) in Head CT",
