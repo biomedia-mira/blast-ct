@@ -5,8 +5,10 @@
 
 This repository provides our deep learning image segmentation tool for traumatic brain injuries in 3D CT scans.
 
-Please cite our article when using our software:
+Please consider citing our article when using our software:
 > Monteiro M, Newcombe VFJ, Mathieu F, Adatia K, Kamnitsas K, Ferrante E, Das T, Whitehouse D, Rueckert D, Menon DK, Glocker B. **Multi-class semantic segmentation and quantification of traumatic brain injury lesions on head CT using deep learning – an algorithm development and multi-centre validation study**. _The Lancet Digital Health_ (2020); in press.
+
+WARNING: This software is not intended for clinical use.
 
 ## Source code
 
