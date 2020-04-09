@@ -1,4 +1,6 @@
 # BLAST-CT
+[![DOI](https://zenodo.org/badge/246262662.svg)](https://zenodo.org/badge/latestdoi/246262662)
+
 **B**rain **L**esion **A**nalysis and **S**egmentation **T**ool for **C**omputed **T**omography
 
 This repository provides our deep learning image segmentation tool for traumatic brain injuries in 3D CT scans.
