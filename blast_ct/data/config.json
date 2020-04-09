@@ -58,7 +58,7 @@
 		"max_cases_in_memory": 50
 	},
 	"valid": {
-		"batch_size": 64,
+		"batch_size": 32,
 		"input_patch_size": [110, 110, 110],
 		"patches_per_image": 40,
 		"images_per_epoch": 100,
@@ -68,7 +68,7 @@
 		"keep_model_every": 400
 	},
 	"test": {
-		"batch_size": 64,
+		"batch_size": 32,
 		"input_patch_size": [110, 110, 110],
 		"num_workers": 1,
 		"eval_every": 2000
