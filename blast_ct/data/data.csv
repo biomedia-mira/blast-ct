@@ -1,2 +1,11 @@
 id,image,target,sampling_mask
 scan_0,data/scans/scan_0/scan_0_image.nii.gz,data/scans/scan_0/scan_0_segmentation.nii.gz,data/scans/scan_0/scan_0_sampling_mask.nii.gz
+scan_0,data/scans/scan_1/scan_0_image.nii.gz,data/scans/scan_0/scan_0_segmentation.nii.gz,data/scans/scan_0/scan_0_sampling_mask.nii.gz
+scan_0,data/scans/scan_2/scan_0_image.nii.gz,data/scans/scan_0/scan_0_segmentation.nii.gz,data/scans/scan_0/scan_0_sampling_mask.nii.gz
+scan_0,data/scans/scan_3/scan_0_image.nii.gz,data/scans/scan_0/scan_0_segmentation.nii.gz,data/scans/scan_0/scan_0_sampling_mask.nii.gz
+scan_0,data/scans/scan_4/scan_0_image.nii.gz,data/scans/scan_0/scan_0_segmentation.nii.gz,data/scans/scan_0/scan_0_sampling_mask.nii.gz
+scan_0,data/scans/scan_5/scan_0_image.nii.gz,data/scans/scan_0/scan_0_segmentation.nii.gz,data/scans/scan_0/scan_0_sampling_mask.nii.gz
+scan_0,data/scans/scan_6/scan_0_image.nii.gz,data/scans/scan_0/scan_0_segmentation.nii.gz,data/scans/scan_0/scan_0_sampling_mask.nii.gz
+scan_0,data/scans/scan_7/scan_0_image.nii.gz,data/scans/scan_0/scan_0_segmentation.nii.gz,data/scans/scan_0/scan_0_sampling_mask.nii.gz
+scan_0,data/scans/scan_8/scan_0_image.nii.gz,data/scans/scan_0/scan_0_segmentation.nii.gz,data/scans/scan_0/scan_0_sampling_mask.nii.gz
+scan_0,data/scans/scan_9/scan_0_image.nii.gz,data/scans/scan_0/scan_0_segmentation.nii.gz,data/scans/scan_0/scan_0_sampling_mask.nii.gz
