@@ -11,6 +11,8 @@ Monteiro and Newcombe are equal first authors. Menon and Glocker are equal senio
 
 **NOTE:** This software is not intended for clinical use.
 
+![Examples for automatic lesion segmentation](blast-ct.png)
+
 ## Source code
 
 The provided source code enables training and testing of our convolutional neural network designed for multi-class brain lesion segmentation in head CT.
