@@ -75,7 +75,7 @@ class NiftiPatchSaver(object):
 
         if len(self.patches) >= patches_in_image:
             to_write = {}
-            case_id = str(self.dataset.data_index.loc[self.image_index]['id'])
+            id_ = self.dataset.data_index.loc[self.image_index]['id']
             input_image = sitk.ReadImage(self.dataset.data_index.loc[self.image_index][self.dataset.channels[0]])
             patches = list(torch.stack(self.patches[0:patches_in_image]).numpy())
             self.patches = self.patches[patches_in_image:]
@@ -94,11 +94,11 @@ class NiftiPatchSaver(object):
                 to_write[name] = images
 
             for name, array in to_write.items():
-                path = os.path.join(self.prediction_dir, f'{case_id:s}_{name:s}.nii.gz')
-                self.data_index.loc[self.data_index['id'] == case_id, name] = path
+                path = os.path.join(self.prediction_dir, f'{str(id_):s}_{name:s}.nii.gz')
+                self.data_index.loc[self.data_index['id'] == id_, name] = path
                 save_image(array, input_image, path)
             self.image_index += 1
-            message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Saved prediction for {case_id}."
+            message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Saved prediction for {str(id_)}."
             if self.image_index >= len(self.dataset.image_mapping):
                 self.data_index.to_csv(os.path.join(self.prediction_dir, 'prediction.csv'), index=False)
                 self.reset()
