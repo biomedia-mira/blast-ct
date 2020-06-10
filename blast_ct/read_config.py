@@ -1,15 +1,15 @@
-from . import models
-from .trainer import losses
+from blast_ct import models as models
+from blast_ct.trainer import losses as losses
 import torch.nn
 from torch.utils.data.dataloader import DataLoader
-from .nifti.datasets import PatchWiseNiftiDataset, FullImageToOverlappingPatchesNiftiDataset, worker_init_fn
-from .nifti.savers import NiftiPatchSaver
-from .nifti import patch_samplers
-from .nifti import transformation
-from .nifti import augmention
-from .trainer.metrics import Loss
-from .trainer.metrics import SegmentationMetrics
-from .trainer.hooks import TrainingEvaluator, ValidationEvaluator, ModelSaverHook, NaNLoss
+from blast_ct.nifti.datasets import PatchWiseNiftiDataset, FullImageToOverlappingPatchesNiftiDataset, worker_init_fn
+from blast_ct.nifti.savers import NiftiPatchSaver
+from blast_ct.nifti import patch_samplers
+from blast_ct.nifti import transformation
+from blast_ct.nifti import augmention
+from blast_ct.trainer.metrics import Loss
+from blast_ct.trainer.metrics import SegmentationMetrics
+from blast_ct.trainer.hooks import TrainingEvaluator, ValidationEvaluator, ModelSaverHook, NaNLoss
 
 
 def get_augmentation(augmentation_dict):

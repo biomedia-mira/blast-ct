@@ -6,10 +6,10 @@ import numpy as np
 import math
 import random
 import torch.utils.data as data
-from .patch_samplers import PatchSampler
-from .transformation import Transformation
-from .augmention import RandomAugmentation
-from .rescale import rescale
+from blast_ct.nifti.patch_samplers import PatchSampler
+from blast_ct.nifti.transformation import Transformation
+from blast_ct.nifti.augmention import RandomAugmentation
+from blast_ct.nifti.rescale import rescale
 
 
 # numpy.random state is discarded at the end of a worker process and does not propagate between workers or to the

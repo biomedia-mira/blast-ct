@@ -4,10 +4,10 @@ import os
 import argparse
 import pandas as pd
 import shutil
-from .trainer.inference import ModelInference, ModelInferenceEnsemble
-from .train import set_device
-from .read_config import get_model, get_test_loader
-from .nifti.savers import NiftiPatchSaver
+from blast_ct.trainer.inference import ModelInference, ModelInferenceEnsemble
+from blast_ct.train import set_device
+from blast_ct.read_config import get_model, get_test_loader
+from blast_ct.nifti.savers import NiftiPatchSaver
 
 
 def path(string):

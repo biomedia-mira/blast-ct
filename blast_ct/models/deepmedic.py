@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch
-from .base import BiomedicalBlock, DownSample, UpSample, PreActBlock, crop_center
+from blast_ct.models.base import BiomedicalBlock, DownSample, UpSample, PreActBlock, crop_center
 
 SCALE_FACTORS = ((5, 5, 5), (3, 3, 3), (1, 1, 1))
 FEATURE_MAPS = (30, 30, 40, 40, 40, 40, 50, 50)

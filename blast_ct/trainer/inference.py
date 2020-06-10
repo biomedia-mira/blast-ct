@@ -1,7 +1,7 @@
 import torch
 import time
-from .logger import get_logger
-from .model_trainer import task_predict_fn_dict
+from blast_ct.trainer.logger import get_logger
+from blast_ct.trainer.model_trainer import task_predict_fn_dict
 
 
 class ModelInference(object):

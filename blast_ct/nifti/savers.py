@@ -2,8 +2,8 @@ import os
 import torch
 import numpy as np
 import SimpleITK as sitk
-from .datasets import FullImageToOverlappingPatchesNiftiDataset
-from .patch_samplers import get_patch_and_padding
+from blast_ct.nifti.datasets import FullImageToOverlappingPatchesNiftiDataset
+from blast_ct.nifti.patch_samplers import get_patch_and_padding
 
 
 def save_image(output_array, input_image, path, resolution=None):

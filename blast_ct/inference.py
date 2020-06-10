@@ -1,10 +1,10 @@
 import os
 import argparse
 import json
-from .trainer.inference import ModelInference, ModelInferenceEnsemble
-from .train import set_device
-from .read_config import get_model, get_test_loader
-from .nifti.savers import NiftiPatchSaver
+from blast_ct.trainer.inference import ModelInference, ModelInferenceEnsemble
+from blast_ct.train import set_device
+from blast_ct.read_config import get_model, get_test_loader
+from blast_ct.nifti.savers import NiftiPatchSaver
 
 
 def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, overwrite):
