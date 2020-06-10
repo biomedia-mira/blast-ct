@@ -9,6 +9,7 @@ import torch.utils.data as data
 from .patch_samplers import PatchSampler
 from .transformation import Transformation
 from .augmention import RandomAugmentation
+from .rescale import rescale
 
 
 # numpy.random state is discarded at the end of a worker process and does not propagate between workers or to the
@@ -37,7 +38,8 @@ class NiftiDataset(data.Dataset):
                  transformation=None,
                  augmentation=None,
                  max_cases_in_memory=0,
-                 task='segmentation'):
+                 task='segmentation',
+                 resolution=None):
         self.data_index = pd.read_csv(data_csv_path)
         if 'id' not in self.data_index:
             raise ValueError('id column no provided in csv file.')
@@ -54,6 +56,7 @@ class NiftiDataset(data.Dataset):
         self.max_cases_in_memory = max_cases_in_memory
         self.case_memory = {}
         self.task = task
+        self.resolution = resolution
 
         for el in self.transformation:
             assert isinstance(el, Transformation)
@@ -61,18 +64,21 @@ class NiftiDataset(data.Dataset):
         for el in self.augmentation:
             assert isinstance(el, RandomAugmentation)
 
-    def get_array_from_dataset(self, index, name):
+    def get_array_from_dataset(self, index, name, is_discrete=False):
         if name in self.data_index:
-            return sitk.GetArrayFromImage(sitk.ReadImage(self.data_index.loc[index][name])).astype(np.float32)
+            image = sitk.ReadImage(self.data_index.loc[index][name])
+            if self.resolution is not None:
+                rescale(self.resolution, image, is_discrete)
+            return sitk.GetArrayFromImage(image).astype(np.float32)
         return None
 
     def get_case_from_disk(self, index):
-        target = self.get_array_from_dataset(index, self.target)
-        sampling_mask = self.get_array_from_dataset(index, self.sampling_mask)
+        target = self.get_array_from_dataset(index, self.target, is_discrete=True)
+        sampling_mask = self.get_array_from_dataset(index, self.sampling_mask, is_discrete=True)
 
         stack = list()
         for channel in self.channels:
-            stack.append(self.get_array_from_dataset(index, channel))
+            stack.append(self.get_array_from_dataset(index, channel, is_discrete=False))
         image = np.stack(stack)
 
         if sampling_mask is None:
@@ -148,18 +154,21 @@ class PatchWiseNiftiDataset(NiftiDataset, data.IterableDataset):
                  transformation=None,
                  augmentation=None,
                  max_cases_in_memory=0,
-                 sequential=False):
+                 sequential=False,
+                 resolution=None):
 
         # save RAM since when num_workers = 0 dataset state is kept
         max_cases_in_memory = images_per_epoch if max_cases_in_memory > images_per_epoch else max_cases_in_memory
-        super().__init__(data_csv_path,
-                         channels,
-                         target, sampling_mask,
-                         sample_weight,
-                         transformation,
-                         augmentation,
-                         max_cases_in_memory,
-                         task='segmentation')
+        super().__init__(data_csv_path=data_csv_path,
+                         channels=channels,
+                         target=target,
+                         sampling_mask=sampling_mask,
+                         sample_weight=sample_weight,
+                         transformation=transformation,
+                         augmentation=augmentation,
+                         max_cases_in_memory=max_cases_in_memory,
+                         task='segmentation',
+                         resolutino=resolution)
 
         assert isinstance(patch_sampler, PatchSampler)
         self.patch_sampler = patch_sampler
@@ -215,17 +224,19 @@ class FullImageToOverlappingPatchesNiftiDataset(NiftiDataset, data.IterableDatas
                  sampling_mask=None,
                  sample_weight=None,
                  transformation=None,
-                 augmentation=None):
+                 augmentation=None,
+                 resolution=None):
 
-        super().__init__(data_csv_path,
-                         channels,
-                         target,
-                         sampling_mask,
-                         sample_weight,
-                         transformation,
-                         augmentation,
+        super().__init__(data_csv_path=data_csv_path,
+                         channels=channels,
+                         target=target,
+                         sampling_mask=sampling_mask,
+                         sample_weight=sample_weight,
+                         transformation=transformation,
+                         augmentation=augmentation,
                          max_cases_in_memory=1,
-                         task='segmentation')
+                         task='segmentation',
+                         resoltuion=resolution)
         self.patch_sampler = PatchSampler(image_patch_shape, target_patch_shape)
         self.target_patch_shape = target_patch_shape
         self.index_mapping = []

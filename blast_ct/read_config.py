@@ -35,6 +35,7 @@ def get_train_loader(config, model, train_csv_path, use_cuda):
 
     sampling_mask = config['data']['sampling_mask'] if 'sampling_mask' in config['data'] else None
     sample_weight = config['data']['sample_weight'] if 'sample_weight' in config['data'] else None
+    resolution = config['data']['resolution'] if 'resolution' in config['data'] else None
 
     train_set = PatchWiseNiftiDataset(patch_sampler=sampler,
                                       images_per_epoch=config['training']['images_per_epoch'],
@@ -46,7 +47,8 @@ def get_train_loader(config, model, train_csv_path, use_cuda):
                                       sample_weight=sample_weight,
                                       transformation=transformation,
                                       augmentation=augmentation,
-                                      max_cases_in_memory=config['training']['max_cases_in_memory'])
+                                      max_cases_in_memory=config['training']['max_cases_in_memory'],
+                                      resolution=resolution)
 
     train_loader = DataLoader(train_set,
                               batch_size=config['training']['batch_size'],
@@ -66,6 +68,7 @@ def get_valid_loader(config, model, test_csv_path, use_cuda):
 
     sampling_mask = config['data']['sampling_mask'] if 'sampling_mask' in config['data'] else None
     sample_weight = config['data']['sample_weight'] if 'sample_weight' in config['data'] else None
+    resolution = config['data']['resolution'] if 'resolution' in config['data'] else None
 
     sampler_type = list(config['training']['sampler'].keys())[0]
     sampler_class = getattr(patch_samplers, sampler_type)
@@ -82,7 +85,8 @@ def get_valid_loader(config, model, test_csv_path, use_cuda):
                                       sample_weight=sample_weight,
                                       transformation=transformation,
                                       max_cases_in_memory=config['training']['max_cases_in_memory'],
-                                      sequential=True)
+                                      sequential=True,
+                                      resolution=resolution)
 
     valid_loader = DataLoader(valid_set,
                               batch_size=config['valid']['batch_size'],
@@ -101,6 +105,7 @@ def get_test_loader(config, model, test_csv_path, use_cuda):
     transformation = get_transformation(config['data']['transformation'])
 
     sampling_mask = config['data']['sampling_mask'] if 'sampling_mask' in config['data'] else None
+    resolution = config['data']['resolution'] if 'resolution' in config['data'] else None
 
     test_set = FullImageToOverlappingPatchesNiftiDataset(image_patch_shape=input_patch_size,
                                                          target_patch_shape=output_patch_size,
@@ -108,7 +113,8 @@ def get_test_loader(config, model, test_csv_path, use_cuda):
                                                          channels=config['data']['channels'],
                                                          target=config['data']['target'],
                                                          sampling_mask=sampling_mask,
-                                                         transformation=transformation)
+                                                         transformation=transformation,
+                                                         resolution=resolution)
 
     test_loader = DataLoader(test_set,
                              batch_size=config['test']['batch_size'],

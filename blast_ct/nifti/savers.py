@@ -6,10 +6,13 @@ from .datasets import FullImageToOverlappingPatchesNiftiDataset
 from .patch_samplers import get_patch_and_padding
 
 
-def save_image(output_array, input_image, path):
+def save_image(output_array, input_image, path, resolution=None):
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
     image = sitk.GetImageFromArray(output_array)
+    if resolution is not None:
+        image.SetSpacing(resolution)
+        image = sitk.Resample(image, input_image, sitk.Transform(), sitk.sitkNearestNeighbor, 0)
     image.CopyInformation(input_image)
     sitk.WriteImage(image, path)
 
@@ -92,11 +95,11 @@ class NiftiPatchSaver(object):
                 self.extra_output_patches[name] = self.extra_output_patches[name][patches_in_image:]
                 images = reconstruct_image(patches, target_shape, center_points, target_patch_shape)
                 to_write[name] = images
-
+            resolution = self.dataset.resolution
             for name, array in to_write.items():
                 path = os.path.join(self.prediction_dir, f'{str(id_):s}_{name:s}.nii.gz')
                 self.data_index.loc[self.data_index['id'] == id_, name] = path
-                save_image(array, input_image, path)
+                save_image(array, input_image, path, resolution)
             self.image_index += 1
             message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Saved prediction for {str(id_)}."
             if self.image_index >= len(self.dataset.image_mapping):
