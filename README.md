@@ -22,13 +22,13 @@ The provided source code enables training and testing of our convolutional neura
 We also make available a model that has been trained on a set of 184 annotated CT scans obtained from multiple clinical sites. 
 This model has been validated on an internal set of 655 CT scans, and on an external, independent set of scans from 500 patients from the publicly available CQ500 dataset. The results are presented and discussed in our paper (to appear soon).
 
-**To use the pre-trained model on your own images, these must be first resamped to 1x1x1 mm resolution.**
 The output of our lesion segmentation tool is a segmentation map in NIfTI format with integer labels representing:
 1. Intraparenchymal haemorrhage (IPH);
 2. Extra-axial haemorrhage (EAH);
 3. Perilesional oedema;
 4. Intraventricular haemorrhage (IVH).
 
+**As of the latest version, the tool resamples images internally and returns the output segmentation in the same space as the input image, so there is no need to preprocess the input.**
 ## Installation
 
 ### Linux and MacOS
