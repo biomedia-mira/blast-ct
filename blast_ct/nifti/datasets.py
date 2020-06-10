@@ -68,7 +68,7 @@ class NiftiDataset(data.Dataset):
         if name in self.data_index:
             image = sitk.ReadImage(self.data_index.loc[index][name])
             if self.resolution is not None:
-                rescale(self.resolution, image, is_discrete)
+                image = rescale(self.resolution, image, is_discrete)
             return sitk.GetArrayFromImage(image).astype(np.float32)
         return None
 
@@ -168,7 +168,7 @@ class PatchWiseNiftiDataset(NiftiDataset, data.IterableDataset):
                          augmentation=augmentation,
                          max_cases_in_memory=max_cases_in_memory,
                          task='segmentation',
-                         resolutino=resolution)
+                         resolution=resolution)
 
         assert isinstance(patch_sampler, PatchSampler)
         self.patch_sampler = patch_sampler
@@ -236,13 +236,16 @@ class FullImageToOverlappingPatchesNiftiDataset(NiftiDataset, data.IterableDatas
                          augmentation=augmentation,
                          max_cases_in_memory=1,
                          task='segmentation',
-                         resoltuion=resolution)
+                         resolution=resolution)
         self.patch_sampler = PatchSampler(image_patch_shape, target_patch_shape)
         self.target_patch_shape = target_patch_shape
         self.index_mapping = []
         self.image_mapping = {}
         for image_index, row in self.data_index.iterrows():
-            target_shape = sitk.ReadImage(self.data_index.loc[image_index][self.channels[0]]).GetSize()[::-1]
+            image = sitk.ReadImage(self.data_index.loc[image_index][self.channels[0]])
+            if self.resolution is not None:
+                image = rescale(self.resolution, image)
+            target_shape = image.GetSize()[::-1]
             center_points = self.get_center_points(target_shape, target_patch_shape)
             self.image_mapping[image_index] = (target_shape, center_points)
             for patch_index in range(len(center_points)):

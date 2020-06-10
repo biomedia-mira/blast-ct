@@ -14,11 +14,11 @@ def get_size_from_spacing(spacing, physical_size):
 def get_reference_image(image, new_spacing):
     physical_size = get_physical_size(image)
     size = get_size_from_spacing(new_spacing, physical_size)
-    image = sitk.Image(size, image.GetPixelID())
-    image.SetOrigin(image.GetOrigin())
-    image.SetDirection(image.GetDirection())
-    image.SetSpacing(new_spacing)
-    return image
+    reference_image = sitk.Image(size, image.GetPixelID())
+    reference_image.SetOrigin(image.GetOrigin())
+    reference_image.SetDirection(image.GetDirection())
+    reference_image.SetSpacing(new_spacing)
+    return reference_image
 
 
 def rescale(spacing, image: sitk.Image, is_discrete=False):

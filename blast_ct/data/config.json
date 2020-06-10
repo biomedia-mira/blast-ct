@@ -10,6 +10,7 @@
 		"task": "segmentation",
 		"channels": ["image"],
 		"target": "target",
+		"resolution": [1.0, 1.0, 1.0],
 		"transformation": {
 			"IntensityWindowNormalization": {
 				"lower_bound": -15.0,

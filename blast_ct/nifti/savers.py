@@ -12,8 +12,11 @@ def save_image(output_array, input_image, path, resolution=None):
     image = sitk.GetImageFromArray(output_array)
     if resolution is not None:
         image.SetSpacing(resolution)
+        image.SetOrigin(input_image.GetOrigin())
+        image.SetDirection(input_image.GetDirection())
         image = sitk.Resample(image, input_image, sitk.Transform(), sitk.sitkNearestNeighbor, 0)
-    image.CopyInformation(input_image)
+    else:
+        image.CopyInformation(input_image)
     sitk.WriteImage(image, path)
 
 
