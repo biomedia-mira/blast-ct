@@ -22,7 +22,7 @@ The provided source code enables training and testing of our convolutional neura
 We also make available a model that has been trained on a set of 184 annotated CT scans obtained from multiple clinical sites. 
 This model has been validated on an internal set of 655 CT scans, and on an external, independent set of scans from 500 patients from the publicly available CQ500 dataset. The results are presented and discussed in our paper (to appear soon).
 
-The output of our lesion segmentation tool is a segmentation map in NIfTI format with integer labels representing:
+The output of our lesion segmentation tool is a segmentation map in NIfTI format with integer values ranging from 1 to 4 representing:
 1. Intraparenchymal haemorrhage (IPH);
 2. Extra-axial haemorrhage (EAH);
 3. Perilesional oedema;
