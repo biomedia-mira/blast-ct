@@ -29,6 +29,9 @@ def console_tool():
     if not (parse_args.input[-7:] == '.nii.gz' or parse_args.input[-4:] == '.nii'):
         raise IOError('Input file must be of type .nii or .nii.gz')
 
+    if not (parse_args.output[-7:] == '.nii.gz'):
+        raise IOError('Output file must be of type .nii.gz')
+
     install_dir = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(install_dir, 'data/config.json'), 'r') as f:
         config = json.load(f)
@@ -52,6 +55,7 @@ def console_tool():
         model_paths = [os.path.join(install_dir, f'data/saved_models/model_{i:d}.pt') for i in range(1, 13)]
         ModelInferenceEnsemble(job_dir, device, model, saver, model_paths, task='segmentation')(test_loader)
     output_dataframe = pd.read_csv(os.path.join(job_dir, 'predictions/prediction.csv'))
+
     shutil.copyfile(output_dataframe.loc[0, 'prediction'], parse_args.output)
     shutil.rmtree(job_dir)
 
