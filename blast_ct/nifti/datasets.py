@@ -9,7 +9,7 @@ import torch.utils.data as data
 from blast_ct.nifti.patch_samplers import PatchSampler
 from blast_ct.nifti.transformation import Transformation
 from blast_ct.nifti.augmention import RandomAugmentation
-from blast_ct.nifti.rescale import rescale
+from blast_ct.nifti.rescale import rescale, reorient_image
 
 
 # numpy.random state is discarded at the end of a worker process and does not propagate between workers or to the
@@ -67,6 +67,7 @@ class NiftiDataset(data.Dataset):
     def get_array_from_dataset(self, index, name, is_discrete=False):
         if name in self.data_index:
             image = sitk.ReadImage(self.data_index.loc[index][name])
+            image = reorient_image(image, is_discrete)
             if self.resolution is not None:
                 image = rescale(self.resolution, image, is_discrete)
             return sitk.GetArrayFromImage(image).astype(np.float32)
@@ -243,6 +244,7 @@ class FullImageToOverlappingPatchesNiftiDataset(NiftiDataset, data.IterableDatas
         self.image_mapping = {}
         for image_index, row in self.data_index.iterrows():
             image = sitk.ReadImage(self.data_index.loc[image_index][self.channels[0]])
+            image = reorient_image(image, False)
             if self.resolution is not None:
                 image = rescale(self.resolution, image)
             target_shape = image.GetSize()[::-1]
