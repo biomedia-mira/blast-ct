@@ -2,6 +2,7 @@ import argparse
 import pandas as pd
 import SimpleITK as sitk
 import numpy as np
+from tqdm import tqdm
 
 CLASS_NAMES = ['background', 'iph', 'eah', 'oedema', 'ivh']
 
@@ -14,7 +15,7 @@ if __name__ == "__main__":
     parse_args, unknown = parser.parse_known_args()
     prediction_csv_path = parse_args.prediction_csv_path
     dataframe = pd.read_csv(prediction_csv_path, index_col='id')
-    for id, row in dataframe.iterrows():
+    for id, row in tqdm(dataframe.iterrows()):
         prediction = sitk.ReadImage(row['prediction'])
         voxel_volume_ml = np.prod(prediction.GetSpacing()) / 1000.
         array = sitk.GetArrayFromImage(prediction)
