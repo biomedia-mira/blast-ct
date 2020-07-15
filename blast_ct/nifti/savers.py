@@ -5,6 +5,18 @@ import SimpleITK as sitk
 from blast_ct.nifti.datasets import FullImageToOverlappingPatchesNiftiDataset
 from blast_ct.nifti.patch_samplers import get_patch_and_padding
 
+CLASS_NAMES = ['background', 'iph', 'eah', 'oedema', 'ivh']
+
+
+def add_predicted_volumes_to_dataframe(dataframe, id_, array, resolution):
+    voxel_volume_ml = np.prod(resolution) / 1000.
+    for i, class_name in enumerate(CLASS_NAMES):
+        if i == 0:
+            continue
+        volume = np.sum(array == i) * voxel_volume_ml
+        dataframe.loc[dataframe['id'] == id_, f'{class_name:s}_predicted_volume_ml'] = volume
+    return dataframe
+
 
 def save_image(output_array, input_image, path, resolution=None):
     if not os.path.exists(os.path.dirname(path)):
@@ -103,6 +115,9 @@ class NiftiPatchSaver(object):
                 path = os.path.join(self.prediction_dir, f'{str(id_):s}_{name:s}.nii.gz')
                 self.data_index.loc[self.data_index['id'] == id_, name] = path
                 save_image(array, input_image, path, resolution)
+                if name == 'prediction':
+                    resolution_ = resolution if resolution is not None else input_image.GetSpacing()
+                    self.data_index = add_predicted_volumes_to_dataframe(self.data_index, id_, array, resolution_)
             self.image_index += 1
             message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Saved prediction for {str(id_)}."
             if self.image_index >= len(self.dataset.image_mapping):
