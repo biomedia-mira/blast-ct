@@ -4,7 +4,8 @@ import numpy as np
 import SimpleITK as sitk
 from blast_ct.nifti.datasets import FullImageToOverlappingPatchesNiftiDataset
 from blast_ct.nifti.patch_samplers import get_patch_and_padding
-from blast_ct.nifti.rescale import reorient_image
+from blast_ct.nifti.rescale import create_reference_reoriented_image
+
 CLASS_NAMES = ['background', 'iph', 'eah', 'oedema', 'ivh']
 
 
@@ -22,13 +23,11 @@ def save_image(output_array, input_image, path, resolution=None):
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
     image = sitk.GetImageFromArray(output_array)
-    if resolution is not None:
-        image.SetSpacing(resolution)
-        image.SetOrigin(input_image.GetOrigin())
-        image.SetDirection(input_image.GetDirection())
-        image = sitk.Resample(image, input_image, sitk.Transform(), sitk.sitkNearestNeighbor, 0)
-    else:
-        image.CopyInformation(input_image)
+    reference = create_reference_reoriented_image(input_image)
+    image.SetOrigin(reference.GetOrigin())
+    image.SetDirection(reference.GetDirection())
+    image.SetSpacing(resolution) if resolution is not None else image.SetSpacing(reference.GetSpacing())
+    image = sitk.Resample(image, input_image, sitk.Transform(), sitk.sitkNearestNeighbor, 0)
     sitk.WriteImage(image, path)
 
 
@@ -95,7 +94,6 @@ class NiftiPatchSaver(object):
             to_write = {}
             id_ = self.dataset.data_index.loc[self.image_index]['id']
             input_image = sitk.ReadImage(self.dataset.data_index.loc[self.image_index][self.dataset.channels[0]])
-            input_image = reorient_image(input_image, is_discrete=False)
             patches = list(torch.stack(self.patches[0:patches_in_image]).numpy())
             self.patches = self.patches[patches_in_image:]
             reconstruction = reconstruct_image(patches, target_shape, center_points, target_patch_shape)

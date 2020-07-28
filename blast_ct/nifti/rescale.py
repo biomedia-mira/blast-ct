@@ -44,9 +44,7 @@ def sitk_to_numpy(sitk_image, dtype=np.float32):
     return array
 
 
-def reorient_image(image, is_discrete):
-    """Reorients an image to standard radiology view."""
-    default_value = 0 if is_discrete else float(np.min(sitk.GetArrayViewFromImage(image)))
+def create_reference_reoriented_image(image):
     dir = np.array(image.GetDirection()).reshape(len(image.GetSize()), -1)
     ind = np.argmax(np.abs(dir), axis=0)
     new_size = np.array(image.GetSize())[ind]
@@ -62,12 +60,24 @@ def reorient_image(image, is_discrete):
     new_origin = np.array(image.GetOrigin()) + np.matmul(new_dir, (new_extent * flip))
     new_dir = np.matmul(new_dir, flip_mat)
 
+    reference = sitk.Image(new_size.tolist(), image.GetPixelIDValue())
+    reference.SetSpacing(new_spacing.tolist())
+    reference.SetOrigin(new_origin.tolist())
+    reference.SetDirection(new_dir.flatten().tolist())
+    return reference
+
+
+def reorient_image(image, is_discrete):
+    """Reorients an image to standard radiology view."""
+    default_value = 0 if is_discrete else float(np.min(sitk.GetArrayViewFromImage(image)))
+
+    reference = create_reference_reoriented_image(image)
     resample = sitk.ResampleImageFilter()
-    resample.SetOutputSpacing(new_spacing.tolist())
-    resample.SetSize(new_size.tolist())
-    resample.SetOutputDirection(new_dir.flatten().tolist())
-    resample.SetOutputOrigin(new_origin.tolist())
-    resample.SetTransform(sitk.Transform())
+    resample.SetReferenceImage(reference)
     resample.SetDefaultPixelValue(default_value)
-    resample.SetInterpolator(sitk.sitkNearestNeighbor)
+    resample.SetTransform(sitk.Transform())
+    if is_discrete:
+        resample.SetInterpolator(sitk.sitkNearestNeighbor)
+    else:
+        resample.SetInterpolator(sitk.sitkLinear)
     return resample.Execute(image)
