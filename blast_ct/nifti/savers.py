@@ -4,7 +4,7 @@ import numpy as np
 import SimpleITK as sitk
 from blast_ct.nifti.datasets import FullImageToOverlappingPatchesNiftiDataset
 from blast_ct.nifti.patch_samplers import get_patch_and_padding
-
+from blast_ct.nifti.rescale import reorient_image
 CLASS_NAMES = ['background', 'iph', 'eah', 'oedema', 'ivh']
 
 
@@ -95,6 +95,7 @@ class NiftiPatchSaver(object):
             to_write = {}
             id_ = self.dataset.data_index.loc[self.image_index]['id']
             input_image = sitk.ReadImage(self.dataset.data_index.loc[self.image_index][self.dataset.channels[0]])
+            input_image = reorient_image(input_image, is_discrete=False)
             patches = list(torch.stack(self.patches[0:patches_in_image]).numpy())
             self.patches = self.patches[patches_in_image:]
             reconstruction = reconstruct_image(patches, target_shape, center_points, target_patch_shape)
