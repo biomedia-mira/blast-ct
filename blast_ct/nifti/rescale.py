@@ -67,6 +67,7 @@ def create_reference_reoriented_image(image):
         reference.SetDirection(new_dir.flatten().tolist())
     except RuntimeError:
         print('Could not reorient image due to singular direction matrix, proceeding with image not reoriented!')
+        return image
     return reference
 
 
