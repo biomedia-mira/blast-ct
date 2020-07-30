@@ -64,14 +64,18 @@ def create_reference_reoriented_image(image):
     reference.SetSpacing(new_spacing.tolist())
     reference.SetOrigin(new_origin.tolist())
     reference.SetDirection(new_dir.flatten().tolist())
+
     return reference
 
 
 def reorient_image(image, is_discrete):
     """Reorients an image to standard radiology view."""
     default_value = 0 if is_discrete else float(np.min(sitk.GetArrayViewFromImage(image)))
-
-    reference = create_reference_reoriented_image(image)
+    try:
+        reference = create_reference_reoriented_image(image)
+    except RuntimeError:
+        print('Could not reorient an image due to singular direction matrix, proceeding with image not reoriented!')
+        return image
     resample = sitk.ResampleImageFilter()
     resample.SetReferenceImage(reference)
     resample.SetDefaultPixelValue(default_value)
