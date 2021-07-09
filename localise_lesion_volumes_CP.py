@@ -46,52 +46,40 @@ class LesionVolumeLocalisationMNI(object):
             # If region is background (index 0)
             if roi_label == 0:
                 continue
-            # Create a mask for each region (each atlas label)
+            # Create a mask for each region (each atlas label) and calculate its volume
             region_mask = atlas_label_map == roi_label
-
-            # Why do we use sitk.Mask(region_mask, brain_mask) and not just region_mask?? Bc the region is expanded
-            # brain mask -> from the parcellated atlas
             region_volumes[roi_name] = self.calc_volume_ml(sitk.Mask(region_mask, brain_mask))
-            # If the label map is the lesion map (it is), then here we get a mask of the portion of each region
-            # occupied by the lesion
+
+            # Get a mask of the lesion present in the region
             masked_label_map = sitk.Mask(label_map, region_mask)
             for class_label, class_name in enumerate(self.class_names):
-                # Class with index 0 is also background
-                # Here, maybe it would be helpful to flag and not continue, as if a lesion is identified
-                # to be in the background, it should be flagged
+                # class_label = 0 -> background
                 if class_label == 0:
                     continue
-                # Calculate the volume of each class type in the overlap between the region and lesion
+                # Calculate the volume of the overlap between the region and lesion, for each lesion class
                 localised_volumes[class_name][roi_name] = self.calc_volume_ml(masked_label_map == class_label)
-                # From this function we take the volume per lesion class and per anatomical roi; and each roi's volume
-                # What if we have several lesions in one scan? the label_map is per CT scan or per lesion?
+
         return localised_volumes, region_volumes
 
-    # data_index_csv is the csv file the user submits with the lesion maps paths (I think)
     def __call__(self, data_index_csv, target_names):
         data_index = pd.read_csv(data_index_csv, index_col='id')
-        #  .iterrows() is used to iterate over a dataset's rows in the form of (index, series) pair
         for id_, item in tqdm(data_index.iterrows()):
-            # This csv file includes one column with the transform from the blast-ct output to mni space?
-            # Transform from the native scan to the study specific
+            # Transform (rigid+affine) from the native scan to the study specific CT template
             aff_transform = sitk.ReadTransform(item['aff_transform'])
             for target_name in target_names:
                 if not isinstance(item[target_name], str):
                     continue
-                # get the atlas_label_map, brain mask and label_map in the native or atlas space
-                label_map = sitk.ReadImage(item[target_name])  # Predicted segmentation
-                atlas_label_map = self.atlas_label_map         # Parcellated atlas
-                brain_mask = self.brain_mask
 
-                # native_space = label_map space, so the lesion map space/subject specific space? yes
+                label_map = sitk.ReadImage(item[target_name])  # target (e.g. lesion map) in native space
+                atlas_label_map = self.atlas_label_map         # Parcellated atlas
+                brain_mask = self.brain_mask                   # Mask of parcellated atlas
+
                 if self.native_space:
-                    # If we want to work on native space, we need to put everything that is in MNI space (parcellated
-                    # atlas and correspondent mask) in native space, using the inverse.
-                    # If we project the parcellated atlas to the study-specific CT template, we just need to use the
-                    # inverse of the rig+affine
+                    # Register parcellated atlas and correspondent brain mask to native space
                     atlas_label_map = sitk.Resample(atlas_label_map, label_map, aff_transform.GetInverse(), sitk.sitkNearestNeighbor, 0)
                     brain_mask = sitk.Resample(brain_mask, label_map, aff_transform.GetInverse(), sitk.sitkNearestNeighbor, 0)
                 else:
+                    # Register target to atlas space
                     label_map = sitk.Resample(label_map, atlas_label_map, aff_transform, sitk.sitkNearestNeighbor, 0)
 
                 # add summary statistics
@@ -99,24 +87,25 @@ class LesionVolumeLocalisationMNI(object):
                 for class_label, class_name in enumerate(self.class_names):
                     if class_label == 0:
                         continue
-                    # The max of label_map == class_label is always 1
                     data_index.loc[id_, f'{target_name}_{class_name:s}_ml'] = self.calc_volume_ml(label_map == class_label)
 
-                # localise lesion volumes
-                # localised_volumes is a dictionary: volume of lesion per lesion class and per anatomical ROI
+                # Calculate lesion volume per lesion class and per anatomical ROI and total regions volumes
                 localised_volumes, region_volumes = self.localise_lesion_volumes(label_map, atlas_label_map, brain_mask)
+
+                # Add lesion volume per class and per ROI to localised_volumes dictionary
                 for class_name in localised_volumes.keys():
                     for roi_name in localised_volumes[class_name].keys():
                         volume = localised_volumes[class_name][roi_name]
                         if volume is not None:
                             data_index.loc[id_, f'{target_name}_{class_name:s}_{roi_name:s}_ml'] = volume
 
-                # add region volumes
+                # Add region volumes to region_volumes dictionary
                 data_index.loc[id_, f'Brain_volume_ml'] = self.calc_volume_ml(brain_mask)
                 for roi_name in region_volumes.keys():
                     volume = region_volumes[roi_name]
                     if volume is not None:
                         data_index.loc[id_, f'{roi_name:s}_volume_ml'] = region_volumes[roi_name]
+                        
             id_scan = id_.split("/")[1]
             atlas_native_space_path= '/vol/biomedic3/cpicarr1/template_integration/CT_4_class/parcellated_atlas_native_space/parc_atlas_native_{0}.nii.gz'.format(id_scan)
             brain_mask_path= '/vol/biomedic3/cpicarr1/template_integration/CT_4_class/parcellated_atlas_native_space/brain_mask_native_{0}.nii.gz'.format(id_scan)
