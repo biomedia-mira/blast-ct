@@ -5,10 +5,11 @@ from blast_ct.trainer.inference import ModelInference, ModelInferenceEnsemble
 from blast_ct.train import set_device
 from blast_ct.read_config import get_model, get_test_loader
 from blast_ct.nifti.savers import NiftiPatchSaver
-
+from blast_ct.localisation.CT_to_template_reg_CP3_rigandaff_usedintheend_tointegrate import RegistrationToCTTemplate
+from blast_ct.localisation.localise_lesion_volumes_CP_to_integrate import LesionVolumeLocalisationMNI
 
 def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, localisation,
-                  write_reg_param, no_runs,overwrite, native_space):
+                  write_reg_param, no_runs,overwrite, native_space, target_names):
     if not os.path.exists(job_dir):
         os.makedirs(job_dir)
     else:
@@ -103,6 +104,10 @@ def inference():
                         default=True,
                         type=bool,
                         help='Whether to calculate the volumes in native space or atlas space.')
+    parser.add_argument('--target-names',
+                        nargs='+',
+                        required=True,
+                        help='List of target names to be localised.')
     # Only makes sense if native space = True
     #parser.add_argument('--write-atlas-and-mask-in-native-space',
     #                    default=False,
