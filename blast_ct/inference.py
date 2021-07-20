@@ -7,7 +7,8 @@ from blast_ct.read_config import get_model, get_test_loader
 from blast_ct.nifti.savers import NiftiPatchSaver
 
 
-def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, overwrite):
+def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, localisation,
+                  write_reg_param, no_runs,overwrite, native_space):
     if not os.path.exists(job_dir):
         os.makedirs(job_dir)
     else:
@@ -30,14 +31,26 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     saved_model_paths = saved_model_paths.split()
     n_models = len(saved_model_paths)
     task = config['data']['task']
+    # Both classes called here are in trainer/inference.py
     if n_models == 1:
         ModelInference(job_dir, device, model, saver, saved_model_paths[0], task)(test_loader)
     elif n_models > 1:
         ModelInferenceEnsemble(job_dir, device, model, saver, saved_model_paths, task)(test_loader)
 
+    # Lesion localisation
+
+    data_index_csv = os.path.join(job_dir, 'predictions', 'prediction.csv')
+    # Does it make sense to include this? If data_index_csv doesn't exist, the problem is in ModelInference class
+    if not os.path.exists(data_index_csv):
+        raise FileNotFoundError(f'File {data_index_csv:s} does not exist.')
+    if localisation:
+        csv_to_localise = RegistrationToCTTemplate()(data_index_csv, write_reg_param, no_runs)
+        LesionVolumeLocalisationMNI(native_space)(csv_to_localise, target_names)
+
 
 def inference():
     install_dir = os.path.dirname(os.path.realpath(__file__))
+    # What is this config.json file?
     default_config = os.path.join(install_dir, 'data/config.json')
     saved_model_paths = [os.path.join(install_dir, f'data/saved_models/model_{i:d}.pt') for i in range(1, 13)]
     default_model_paths = ' '.join(saved_model_paths)
@@ -69,10 +82,37 @@ def inference():
                         default=False,
                         type=bool,
                         help='Whether to write probability maps images to disk')
+    parser.add_argument('--localisation',
+                        default=False,
+                        type=bool,
+                        help='Whether to run localisation or not')
+    parser.add_argument('--write-registration-info',
+                        default=False,
+                        type=bool,
+                        help='Whether to write registration iterations and SM values to the csv and the resampled image'
+                             'to the disk.')
+    parser.add_argument('--number-of-runs',
+                        default=1,
+                        type=int,
+                        help='How many times to run registration between native scan and CT template.')
     parser.add_argument('--overwrite',
                         default=False,
                         type=bool,
                         help='Whether to overwrite run if already exists')
+    parser.add_argument('--native-space',
+                        default=True,
+                        type=bool,
+                        help='Whether to calculate the volumes in native space or atlas space.')
+    # Only makes sense if native space = True
+    #parser.add_argument('--write-atlas-and-mask-in-native-space',
+    #                    default=False,
+    #                    type=bool,
+    #                    help='Whether to write parcellated atlas and correspondent mask images in native space to disk.')
+
+    #write_atlas_mask_ns = parse_args.write_atlas_and_mask_in_native_space
+    #native_space_arg = parse_args.native_space
+    #if write_atlas_mask_ns != native_space:
+    #    raise ValueError('If localisation is done in atlas space, can\'t save atlas and mask in native space')
 
     parse_args, unknown = parser.parse_known_args()
 
