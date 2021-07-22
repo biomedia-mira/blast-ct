@@ -34,8 +34,10 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     task = config['data']['task']
     # Both classes called here are in trainer/inference.py
     if n_models == 1:
+        print('entered inference thing nmodel=1')
         ModelInference(job_dir, device, model, saver, saved_model_paths[0], task)(test_loader)
     elif n_models > 1:
+        print('entered inference thing nmodel>1')
         ModelInferenceEnsemble(job_dir, device, model, saver, saved_model_paths, task)(test_loader)
 
     # Lesion localisation
@@ -45,6 +47,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     if not os.path.exists(data_index_csv):
         raise FileNotFoundError(f'File {data_index_csv:s} does not exist.')
     if localisation:
+        print('entered localisation')
         csv_to_localise = RegistrationToCTTemplate()(data_index_csv, write_reg_param, no_runs)
         LesionVolumeLocalisationMNI(native_space)(csv_to_localise, target_names)
 
