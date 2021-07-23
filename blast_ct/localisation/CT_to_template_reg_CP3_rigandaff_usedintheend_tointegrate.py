@@ -106,7 +106,7 @@ class RegistrationToCTTemplate(object):
 
     def best_run(self, final_metric_aff_dict):
         sm_values = {}
-        for iteration in range(1, no_runs):
+        for iteration in range(1, self.no_runs):
             sm_values[iteration] = final_metric_aff_dict.get(iteration,{}).get('final_metric_aff')
         best_iter = min(sm_values.items(), key=operator.itemgetter(1))[0]
         transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = final_metric_aff_dict[best_iter].values()
