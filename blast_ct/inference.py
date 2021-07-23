@@ -9,7 +9,7 @@ from blast_ct.localisation.CT_to_template_reg_CP3_rigandaff_usedintheend_tointeg
 from blast_ct.localisation.localise_lesion_volumes_CP_to_integrate import LesionVolumeLocalisationMNI
 
 def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, localisation,
-                  write_registration_info, no_runs,overwrite, native_space, target_names):
+                  write_registration_info, number_of_runs,overwrite, native_space, target_names):
     if not os.path.exists(job_dir):
         os.makedirs(job_dir)
     else:
@@ -48,7 +48,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
         raise FileNotFoundError(f'File {data_index_csv:s} does not exist.')
     if localisation:
         print('entered localisation')
-        csv_to_localise = RegistrationToCTTemplate()(job_dir, data_index_csv, write_registration_info, no_runs)
+        csv_to_localise = RegistrationToCTTemplate()(job_dir, data_index_csv, write_registration_info, number_of_runs)
         LesionVolumeLocalisationMNI(native_space)(csv_to_localise, target_names)
 
 def inference():
