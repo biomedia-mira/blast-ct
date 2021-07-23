@@ -48,9 +48,8 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
         raise FileNotFoundError(f'File {data_index_csv:s} does not exist.')
     if localisation:
         print('entered localisation')
-        csv_to_localise = RegistrationToCTTemplate()(data_index_csv, write_reg_param, no_runs)
+        csv_to_localise = RegistrationToCTTemplate()(job_dir, data_index_csv, write_reg_param, no_runs)
         LesionVolumeLocalisationMNI(native_space)(csv_to_localise, target_names)
-
 
 def inference():
     install_dir = os.path.dirname(os.path.realpath(__file__))

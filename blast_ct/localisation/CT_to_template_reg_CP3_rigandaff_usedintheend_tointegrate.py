@@ -115,7 +115,7 @@ class RegistrationToCTTemplate(object):
         transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = final_metric_aff_dict[best_iter].values()
         return transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff
 
-    def __call__(self, data_index_csv, write_reg_param, no_runs):
+    def __call__(self, job_dir, data_index_csv, write_reg_param, no_runs):
         image_column = 'image'
         data_index = pd.read_csv(data_index_csv, index_col='id')
         final_metric_aff_dict={}
