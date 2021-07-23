@@ -87,7 +87,10 @@ class RegistrationToCTTemplate(object):
         optimized_transform_aff = sitk.AffineTransform(dimension)
         registration_method_rig.SetInitialTransform(optimized_transform_aff, inPlace=True)
         registration_method_rig.Execute(self.target_template, image)
-        final_aff_transform = sitk.CompositeTransform([final_rig_transform, optimized_transform_aff])
+        #final_aff_transform = sitk.CompositeTransform([final_rig_transform, optimized_transform_aff])
+        final_aff_transform = sitk.Transform()
+        final_aff_transform.AddTransform(final_rig_transform)
+        final_aff_transform.AddTransform(optimized_transform_aff)
         iterations_aff = registration_method_rig.GetOptimizerIteration()
         final_metric_value_aff = registration_method_rig.GetMetricValue()
 
