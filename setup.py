@@ -12,7 +12,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/biomedia-mira/blast_ct",
-    packages=['blast_ct', 'blast_ct.models', 'blast_ct.nifti', 'blast_ct.trainer'],
+    packages=['blast_ct', 'blast_ct.models', 'blast_ct.nifti', 'blast_ct.trainer', 'blast_ct.localisation'],
     package_data={'': ['data/saved_models/*.pt', 'data/config.json', 'README.md']},
     entry_points={
         'console_scripts': [

@@ -144,7 +144,7 @@ class RegistrationToCTTemplate(object):
                     print(f'Could not register image: {id_:s}.')
                     continue
             transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = self.best_run(final_metric_aff_dict, no_runs)
-            transform_path = os.path.join(job_dir,'registration','transforms', f'{new_id}_transform.nii.gz')
+            transform_path = os.path.join(job_dir,'registration','transforms', f'{new_id}_transform.tfm')
             sitk.WriteTransform(transform, transform_path)
             data_index.loc[id_, 'aff_transform'] = transform_path
 
