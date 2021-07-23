@@ -104,9 +104,9 @@ class RegistrationToCTTemplate(object):
 
         return final_aff_transform, iterations_rig, final_metric_value_rig, iterations_aff, final_metric_value_aff, image_resampled_aff
 
-    def best_run(self, final_metric_aff_dict):
+    def best_run(self, final_metric_aff_dict, no_runs):
         sm_values = {}
-        for iteration in range(1, self.no_runs):
+        for iteration in range(1, no_runs):
             sm_values[iteration] = final_metric_aff_dict.get(iteration,{}).get('final_metric_aff')
         best_iter = min(sm_values.items(), key=operator.itemgetter(1))[0]
         transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = final_metric_aff_dict[best_iter].values()
@@ -139,7 +139,7 @@ class RegistrationToCTTemplate(object):
                 except RuntimeError:
                     print(f'Could not register image: {id_:s}.')
                     continue
-            transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = self.best_run(final_metric_aff_dict)
+            transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = self.best_run(final_metric_aff_dict, no_runs)
             transform_path = os.path.join(job_dir,'registration','transforms', f'{new_id}_transform.nii.gz')
             sitk.WriteTransform(transform, transform_path)
             data_index.loc[id_, 'aff_transform'] = transform_path
