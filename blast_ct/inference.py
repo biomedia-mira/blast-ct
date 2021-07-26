@@ -5,8 +5,8 @@ from blast_ct.trainer.inference import ModelInference, ModelInferenceEnsemble
 from blast_ct.train import set_device
 from blast_ct.read_config import get_model, get_test_loader
 from blast_ct.nifti.savers import NiftiPatchSaver
-from localisation.CT_to_template_reg_CP3_rigandaff_usedintheend_tointegrate import RegistrationToCTTemplate
-from localisation.localise_lesion_volumes_CP_to_integrate import LesionVolumeLocalisationMNI
+from blast_ct.localisation.CT_to_template_reg_CP3_rigandaff_usedintheend_tointegrate import RegistrationToCTTemplate
+from blast_ct.localisation.localise_lesion_volumes_CP_to_integrate import LesionVolumeLocalisationMNI
 
 def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, localisation,
                   write_registration_info, number_of_runs,overwrite, native_space, target_names):
