@@ -71,6 +71,7 @@ class RegistrationToCTTemplate(object):
         final_metric_value_rig = registration_method_rig.GetMetricValue()
 
         ######### Affine registration ################
+
         registration_method_rig.SetMetricAsMattesMutualInformation(numberOfHistogramBins=32)
         registration_method_rig.SetMetricSamplingStrategy(registration_method_rig.REGULAR)
         registration_method_rig.SetMetricSamplingPercentage(0.2)
