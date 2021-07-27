@@ -31,6 +31,6 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     setup_requires=['setuptools_scm']
-    data_files = [('bitmaps', ['bm/b1.gif', 'bm/b2.gif']),
-                  ('config', ['cfg/data.cfg'])]
+    #data_files = [('bitmaps', ['bm/b1.gif', 'bm/b2.gif']),
+    #             ('config', ['cfg/data.cfg'])]
 )
