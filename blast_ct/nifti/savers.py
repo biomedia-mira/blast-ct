@@ -130,7 +130,7 @@ class NiftiPatchSaver(object):
             for name, array in to_write.items():
                 path = os.path.join(self.prediction_dir, f'{str(id_):s}_{name:s}.nii.gz')
                 self.data_index.loc[self.data_index['id'] == id_, name] = path
-                self.data_index = save_image(array, input_image, path, self.localisation_dir, id_, self.dataset, self.localisation,
+                self.data_index = save_image(array, input_image, path, self.prediction_dir, id_, self.dataset, self.localisation,
                            self.write_registration_info, self.number_of_runs, self.native_space, resolution)
                 print(self.data_index[self.data_index['id']== id_, 'iterations_rig'])
                 if name == 'prediction':
