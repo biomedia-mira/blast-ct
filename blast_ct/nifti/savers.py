@@ -32,11 +32,12 @@ def save_image(output_array, input_image, path, localisation_dir, image_id, data
     image.SetSpacing(resolution) if resolution is not None else image.SetSpacing(reference.GetSpacing())
     image = sitk.Resample(image, input_image, sitk.Transform(), sitk.sitkNearestNeighbor, 0)
     if localisation:
-        transform, data_index = RegistrationToCTTemplate(localisation_dir)(data_index, write_registration_info,
+        transform, data_index_post_reg = RegistrationToCTTemplate(localisation_dir)(data_index, write_registration_info,
                                                                            number_of_runs, image_id)
         # Image will only be needed here
         #LesionVolumeLocalisationMNI(native_space)(data_index)
     sitk.WriteImage(image, path)
+    return data_index_post_reg
 
 
 def get_num_maps(patches):
@@ -129,7 +130,7 @@ class NiftiPatchSaver(object):
             for name, array in to_write.items():
                 path = os.path.join(self.prediction_dir, f'{str(id_):s}_{name:s}.nii.gz')
                 self.data_index.loc[self.data_index['id'] == id_, name] = path
-                save_image(array, input_image, path, self.localisation_dir, id_, self.data_index, self.localisation,
+                self.data_index = save_image(array, input_image, path, self.localisation_dir, id_, self.dataset, self.localisation,
                            self.write_registration_info, self.number_of_runs, self.native_space, resolution)
                 if name == 'prediction':
                     resolution_ = resolution if resolution is not None else input_image.GetSpacing()
