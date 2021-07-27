@@ -28,7 +28,9 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     test_loader = get_test_loader(config, model, test_csv_path, use_cuda)
     extra_output_names = config['test']['extra_output_names'] if 'extra_output_names' in config['test'] else None
     saver = NiftiPatchSaver(job_dir, test_loader, write_prob_maps=write_prob_maps,
-                            extra_output_names=extra_output_names)
+                            extra_output_names=extra_output_names, localisation = localisation,
+                            number_of_runs = number_of_runs, native_space = native_space,
+                            write_registration_info = write_registration_info)
     saved_model_paths = saved_model_paths.split()
     n_models = len(saved_model_paths)
     task = config['data']['task']
@@ -39,17 +41,6 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     elif n_models > 1:
         print('entered model inference nmodel>1')
         ModelInferenceEnsemble(job_dir, device, model, saver, saved_model_paths, task)(test_loader)
-
-    # Lesion localisation
-
-    data_index_csv = os.path.join(job_dir, 'predictions', 'prediction.csv')
-    # Does it make sense to include this? If data_index_csv doesn't exist, the problem is in ModelInference class
-    if not os.path.exists(data_index_csv):
-        raise FileNotFoundError(f'File {data_index_csv:s} does not exist.')
-    if localisation:
-        print('entered localisation')
-        csv_to_localise = RegistrationToCTTemplate()(job_dir, data_index_csv, write_registration_info, number_of_runs)
-        LesionVolumeLocalisationMNI(native_space)(csv_to_localise, target_names)
 
 def inference():
     install_dir = os.path.dirname(os.path.realpath(__file__))
@@ -107,7 +98,8 @@ def inference():
                         type=bool,
                         help='Whether to calculate the volumes in native space or atlas space.')
     parser.add_argument('--target-names',
-                        nargs='+',
+                        default = 'prediction',
+                        type = str,
                         required=True,
                         help='List of target names to be localised.')
     # Only makes sense if native space = True

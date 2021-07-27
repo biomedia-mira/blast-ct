@@ -5,6 +5,8 @@ import SimpleITK as sitk
 from blast_ct.nifti.datasets import FullImageToOverlappingPatchesNiftiDataset
 from blast_ct.nifti.patch_samplers import get_patch_and_padding
 from blast_ct.nifti.rescale import create_reference_reoriented_image
+from blast_ct.localisation.ct_to_template_reg_CP3_rigandaff_usedintheend_tointegrate import RegistrationToCTTemplate
+from blast_ct.localisation.localise_lesion_volumes_CP_to_integrate import LesionVolumeLocalisationMNI
 
 CLASS_NAMES = ['background', 'iph', 'eah', 'oedema', 'ivh']
 
@@ -19,7 +21,8 @@ def add_predicted_volumes_to_dataframe(dataframe, id_, array, resolution):
     return dataframe
 
 
-def save_image(output_array, input_image, path, resolution=None):
+def save_image(output_array, input_image, path, localisation_dir, image_id, data_index, localisation, write_registration_info,
+               number_of_runs, native_space, resolution=None):
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
     image = sitk.GetImageFromArray(output_array)
@@ -28,6 +31,11 @@ def save_image(output_array, input_image, path, resolution=None):
     image.SetDirection(reference.GetDirection())
     image.SetSpacing(resolution) if resolution is not None else image.SetSpacing(reference.GetSpacing())
     image = sitk.Resample(image, input_image, sitk.Transform(), sitk.sitkNearestNeighbor, 0)
+    if localisation:
+        transform, data_index = RegistrationToCTTemplate(localisation_dir)(data_index, write_registration_info,
+                                                                  number_of_runs, image_id)
+        # Image will only be needed here
+        #LesionVolumeLocalisationMNI(native_space)(data_index)
     sitk.WriteImage(image, path)
 
 
@@ -55,10 +63,13 @@ def reconstruct_image(patches, image_shape, center_points, patch_shape):
 
 
 class NiftiPatchSaver(object):
-    def __init__(self, job_dir, dataloader, write_prob_maps=True, extra_output_names=None):
+    def __init__(self, job_dir, dataloader, write_prob_maps=True, extra_output_names=None,
+                 localisation = False, number_of_runs = 1, native_space = True,
+                 write_registration_info=False):
         assert isinstance(dataloader.dataset, FullImageToOverlappingPatchesNiftiDataset)
 
         self.prediction_dir = os.path.join(job_dir, 'predictions')
+        self.localisation_dir = os.path.join(job_dir, 'localisation')
         self.dataloader = dataloader
         self.dataset = dataloader.dataset
         self.write_prob_maps = write_prob_maps
@@ -68,6 +79,11 @@ class NiftiPatchSaver(object):
 
         self.image_index = 0
         self.data_index = self.dataset.data_index.copy()
+
+        self.localisation = localisation
+        self.number_of_runs = number_of_runs
+        self.native_space = native_space
+        self.write_registration_info = write_registration_info
 
     def reset(self):
         self.image_index = 0
@@ -113,7 +129,8 @@ class NiftiPatchSaver(object):
             for name, array in to_write.items():
                 path = os.path.join(self.prediction_dir, f'{str(id_):s}_{name:s}.nii.gz')
                 self.data_index.loc[self.data_index['id'] == id_, name] = path
-                save_image(array, input_image, path, resolution)
+                save_image(array, input_image, path, self.localisation_dir, _id, self.data_index, self.localisation,
+                           self.write_registration_info, self.number_of_runs, self.native_space, resolution)
                 if name == 'prediction':
                     resolution_ = resolution if resolution is not None else input_image.GetSpacing()
                     self.data_index = add_predicted_volumes_to_dataframe(self.data_index, id_, array, resolution_)

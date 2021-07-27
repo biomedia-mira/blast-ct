@@ -7,9 +7,10 @@ import re
 import operator
 
 class RegistrationToCTTemplate(object):
-    def __init__(self):
+    def __init__(self, localisation_dir):
         self.target_template_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),'mean_template_7_u.nii.gz')
         self.target_template = sitk.ReadImage(self.target_template_path)
+        self.localisation_dir = localisation_dir
 
     def register_image_to_atlas(self, image):
         # image was already read before
@@ -116,48 +117,43 @@ class RegistrationToCTTemplate(object):
         transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = final_metric_aff_dict[best_iter].values()
         return transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff
 
-    def __call__(self, job_dir, data_index_csv, write_reg_param, no_runs):
+    def __call__(self, data_index, write_reg_param, no_runs, image_id):
         image_column = 'image'
-        data_index = pd.read_csv(data_index_csv, index_col='id')
+        #data_index = pd.read_csv(data_index_csv, index_col='id')
         final_metric_aff_dict={}
-        for id_, item in tqdm(data_index.iterrows()):
-            # In case the id has bars - not the best solution
-            if "/" in id_:
-                new_id = id_.partition('/')[len(id_.partition('/')) - 1]
-            else:
-                new_id = id_.partition('/')[0]
+        try:
+            image = sitk.ReadImage(data_index.loc[data_index['id'] == image_id, image_column])
+            print('Sucessfully read image ' + data_index.loc[data_index['id'] == image_id, image_column])
+        except RuntimeError:
+            print(f'Could not read image: {image_id:s}')
 
+        for iteration in range(0, no_runs):
             try:
-                image = sitk.ReadImage(item[image_column])
-                print('Sucessfully read image ' + item[image_column])
+                transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = \
+                    self.register_image_to_atlas(image)
+                print(f'{image_id:s} image registered.')
+                final_metric_aff_dict[iteration] = {'transform': transform, 'iterations_rig': iterations_rig,
+                                                    'final_metric_rig': final_metric_rig,
+                                                    'iterations_aff': iterations_aff,
+                                                    'final_metric_aff': final_metric_aff,
+                                                    'image_resampled_aff': image_resampled_aff}
             except RuntimeError:
-                print(f'Could not read image: {id_:s}')
+                print(f'Could not register image: {image_id:s}.')
                 continue
 
-            for iteration in range(0, no_runs):
-                try:
-                    transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = self.register_image_to_atlas(image)
-                    print(f'{id_:s} image registered.')
-                    final_metric_aff_dict[iteration]={'transform':transform, 'iterations_rig':iterations_rig,
-                                                      'final_metric_rig': final_metric_rig, 'iterations_aff':iterations_aff,
-                                                      'final_metric_aff':final_metric_aff, 'image_resampled_aff':image_resampled_aff}
-                except RuntimeError:
-                    print(f'Could not register image: {id_:s}.')
-                    continue
-            transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = self.best_run(final_metric_aff_dict, no_runs)
-            transform_path = os.path.join(job_dir,'registration','transforms', f'{new_id}_transform.tfm')
+        transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = self.best_run(
+            final_metric_aff_dict, no_runs)
+        if write_reg_param:
+            resampled_image_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_resampled.nii.gz')
+            sitk.WriteImage(image_resampled_aff, resampled_image_path)
+            transform_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_transform.nii.gz')
             sitk.WriteTransform(transform, transform_path)
-            data_index.loc[id_, 'aff_transform'] = transform_path
 
-            if write_reg_param:
-                resampled_image_path = os.path.join(job_dir, 'registration', 'resampled_images', f'{new_id}_resampled.nii.gz')
-                sitk.WriteImage(image_resampled_aff, resampled_image_path)
+            data_index.loc[image_id, 'iterations_rig'] = iterations_rig
+            data_index.loc[image_id, 'final_metric_rig'] = final_metric_rig
+            data_index.loc[image_id, 'iterations_aff'] = iterations_aff
+            data_index.loc[image_id, 'final_metric_aff'] = final_metric_aff
+            data_index.loc[image_id, 'image_resampled'] = image_resampled_path
+            data_index.loc[image_id, 'aff_transform'] = transform_path
 
-                data_index.loc[id_, 'iterations_rig'] = iterations_rig
-                data_index.loc[id_, 'final_metric_rig'] = final_metric_rig
-                data_index.loc[id_, 'iterations_aff'] = iterations_aff
-                data_index.loc[id_, 'final_metric_aff'] = final_metric_aff
-                data_index.loc[id_, 'image_resampled'] = image_resampled_path
-        data_index.to_csv(os.path.join(job_dir, 'predictions', 'prediction_to_localise.csv'))
-        print('Registration finished.')
-        return data_index
+        return transform, data_index
