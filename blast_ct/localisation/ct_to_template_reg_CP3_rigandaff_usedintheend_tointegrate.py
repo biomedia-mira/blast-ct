@@ -151,7 +151,7 @@ class RegistrationToCTTemplate(object):
         if write_reg_param:
             resampled_image_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_resampled.nii.gz')
             sitk.WriteImage(image_resampled_aff, resampled_image_path)
-            transform_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_transform.nii.gz')
+            transform_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_transform.tfm')
             sitk.WriteTransform(transform, transform_path)
 
             data_index.loc[image_id, 'iterations_rig'] = iterations_rig
