@@ -132,7 +132,7 @@ class NiftiPatchSaver(object):
                 self.data_index.loc[self.data_index['id'] == id_, name] = path
                 self.data_index = save_image(array, input_image, path, self.prediction_dir, id_, self.dataset, self.localisation,
                            self.write_registration_info, self.number_of_runs, self.native_space, resolution)
-                print(self.data_index[self.data_index['id']== id_, 'iterations_rig'])
+                print(self.data_index.loc[self.data_index['id']== id_, 'iterations_rig'])
                 if name == 'prediction':
                     resolution_ = resolution if resolution is not None else input_image.GetSpacing()
                     self.data_index = add_predicted_volumes_to_dataframe(self.data_index, id_, array, resolution_)
