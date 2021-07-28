@@ -145,7 +145,7 @@ class RegistrationToCTTemplate(object):
         print('already read image')
         try:
             image = sitk.ReadImage(data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item())
-            print('Sucessfully read image ' + data_index.loc[data_index['id'] == image_id, image_column])
+            print('Sucessfully read image ' + data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item())
         except RuntimeError:
             print(f'Could not read image: {image_id:s}')
             return data_index
