@@ -35,9 +35,9 @@ def save_image(output_array, input_image, path, localisation_dir, image_id, data
         transform, data_index_post_reg = RegistrationToCTTemplate(localisation_dir)(data_index, write_registration_info,
                                                                            number_of_runs, image_id)
         # Image will only be needed here
-        #LesionVolumeLocalisationMNI(native_space)(data_index)
+        data_index_post_localise = LesionVolumeLocalisationMNI(native_space)(data_index_post_reg, transform, image_id)
     sitk.WriteImage(image, path)
-    return data_index_post_reg
+    return data_index_post_localise
 
 
 def get_num_maps(patches):
