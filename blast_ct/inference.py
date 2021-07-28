@@ -52,7 +52,7 @@ def inference():
     parser = argparse.ArgumentParser()
     parser.add_argument('--job-dir',
                         required=True,
-                        action = 'store_true',
+                        type = 'str',
                         help='Directory for checkpoints, exports, and '
                              'logs. Use an existing directory to load a '
                              'trained model, or a new directory to retrain')
