@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 class LesionVolumeLocalisationMNI(object):
-    def __init__(self, native_space=True):
+    def __init__(self, localisation_dir, native_space=True):
         # The parcellated atlas in study specific space (CT template space)
         atlas_label_map_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'mean_template_7_u_lobe_atlas_ero_dil.nii.gz')
         roi_dictionary_csv = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lobe_labels.csv')
@@ -18,6 +18,7 @@ class LesionVolumeLocalisationMNI(object):
                                zip(roi_dictionary['ROIName'], roi_dictionary['ROIIndex'])}
         self.class_names = ['background', 'iph', 'eah', 'oedema', 'ivh']
         self.native_space = native_space
+        self.localisation_dir = localisation_dir
 
     # Calculate total volume of a region or of the brain
     @staticmethod
@@ -61,10 +62,11 @@ class LesionVolumeLocalisationMNI(object):
         return localised_volumes, region_volumes
 
     # data_index_csv is the csv file the user submits with the lesion maps paths (I think)
-    def __call__(self, data_index, aff_transform, image_id):
+    def __call__(self, data_index, aff_transform, image_id, image, write_registration_info):
         target_name = 'prediction'
         # get the atlas_label_map, brain mask and label_map in the native or atlas space
-        label_map = sitk.ReadImage(data_index.loc[data_index['id']==image_id,'target'].item())  # Predicted segmentation
+        print(image)
+        label_map = image                       # Predicted segmentation
         atlas_label_map = self.atlas_label_map  # Parcellated atlas
         brain_mask = self.brain_mask
 
@@ -102,5 +104,11 @@ class LesionVolumeLocalisationMNI(object):
             volume = region_volumes[roi_name]
             if volume is not None:
                 data_index.loc[data_index['id']==image_id, f'{roi_name:s}_volume_ml'] = region_volumes[roi_name]
-
+        if write_registration_info and self.native_space:
+            atlas_native_space_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_parc_atlas_native.nii.gz')
+            sitk.WriteImage(atlas_label_map, atlas_native_space_path)
+            brain_mask_native_space_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_brain_mask_native.nii.gz')
+            sitk.WriteImage(brain_mask, brain_mask_native_space_path)
+            data_index.loc[data_index['id'] == image_id, 'atlas_in_native_space'] = atlas_native_space_path
+            data_index.loc[data_index['id'] == image_id, 'brain_mask_native_space'] = brain_mask_native_space_path
         return data_index

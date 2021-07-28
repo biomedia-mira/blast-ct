@@ -181,4 +181,5 @@ class RegistrationToCTTemplate(object):
             data_index.data_index.loc[data_index.data_index['id'] == image_id, 'image_resampled'] = resampled_image_path
             data_index.data_index.loc[data_index.data_index['id'] == image_id, 'aff_transform'] = transform_path
             data_index = data_index.data_index
+
         return transform, data_index

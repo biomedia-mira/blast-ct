@@ -9,7 +9,7 @@ from blast_ct.localisation.ct_to_template_reg_CP3_rigandaff_usedintheend_tointeg
 from blast_ct.localisation.localise_lesion_volumes_CP_to_integrate import LesionVolumeLocalisationMNI
 
 def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, localisation,
-                  write_registration_info, number_of_runs,overwrite, native_space, target_names):
+                  write_registration_info, number_of_runs,overwrite, native_space):
     if not os.path.exists(job_dir):
         os.makedirs(job_dir)
     else:
@@ -52,7 +52,7 @@ def inference():
     parser = argparse.ArgumentParser()
     parser.add_argument('--job-dir',
                         required=True,
-                        type=str,
+                        action = 'store_true',
                         help='Directory for checkpoints, exports, and '
                              'logs. Use an existing directory to load a '
                              'trained model, or a new directory to retrain')
@@ -74,15 +74,15 @@ def inference():
                         help='Path to saved model or list of paths separated by spaces.')
     parser.add_argument('--write-prob-maps',
                         default=False,
-                        type=bool,
+                        action = 'store_true',
                         help='Whether to write probability maps images to disk')
     parser.add_argument('--localisation',
                         default=False,
-                        type=bool,
+                        action = 'store_true',
                         help='Whether to run localisation or not')
     parser.add_argument('--write-registration-info',
                         default=False,
-                        type=bool,
+                        action = 'store_true',
                         help='Whether to write registration iterations and SM values to the csv and the resampled image'
                              'to the disk.')
     parser.add_argument('--number-of-runs',
@@ -91,22 +91,12 @@ def inference():
                         help='How many times to run registration between native scan and CT template.')
     parser.add_argument('--overwrite',
                         default=False,
-                        type=bool,
+                        action = 'store_true',
                         help='Whether to overwrite run if already exists')
     parser.add_argument('--native-space',
                         default=True,
                         type=bool,
                         help='Whether to calculate the volumes in native space or atlas space.')
-    parser.add_argument('--target-names',
-                        default = 'prediction',
-                        type = str,
-                        required=True,
-                        help='List of target names to be localised.')
-    # Only makes sense if native space = True
-    #parser.add_argument('--write-atlas-and-mask-in-native-space',
-    #                    default=False,
-    #                    type=bool,
-    #                    help='Whether to write parcellated atlas and correspondent mask images in native space to disk.')
 
     #write_atlas_mask_ns = parse_args.write_atlas_and_mask_in_native_space
     #native_space_arg = parse_args.native_space

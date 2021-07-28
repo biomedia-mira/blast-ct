@@ -34,8 +34,8 @@ def save_image(output_array, input_image, path, localisation_dir, image_id, data
     if localisation:
         transform, data_index_post_reg = RegistrationToCTTemplate(localisation_dir)(data_index, write_registration_info,
                                                                            number_of_runs, image_id)
-        # Image will only be needed here
-        data_index_post_localise = LesionVolumeLocalisationMNI(native_space)(data_index_post_reg, transform, image_id)
+        data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space)(data_index_post_reg, transform, image_id,
+                                                                             image, write_registration_info)
     sitk.WriteImage(image, path)
     return data_index_post_localise
 
@@ -133,7 +133,7 @@ class NiftiPatchSaver(object):
                 print('entered localisation')
                 self.data_index = save_image(array, input_image, path, self.prediction_dir, id_, self.dataset, self.localisation,
                            self.write_registration_info, self.number_of_runs, self.native_space, resolution)
-                print(self.data_index.loc[self.data_index['id']== id_, 'iterations_rig'])
+
                 if name == 'prediction':
                     resolution_ = resolution if resolution is not None else input_image.GetSpacing()
                     self.data_index = add_predicted_volumes_to_dataframe(self.data_index, id_, array, resolution_)
