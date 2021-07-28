@@ -32,6 +32,7 @@ def save_image(output_array, input_image, path, localisation_dir, image_id, data
     image.SetDirection(reference.GetDirection())
     image.SetSpacing(resolution) if resolution is not None else image.SetSpacing(reference.GetSpacing())
     image = sitk.Resample(image, input_image, sitk.Transform(), sitk.sitkNearestNeighbor, 0)
+    image = sitk.Cast(image, sitk.sitkVectorUInt8)
     if localisation:
         transform, data_index_post_reg = RegistrationToCTTemplate(localisation_dir)(data_index, write_registration_info,
                                                                            number_of_runs, image_id)
