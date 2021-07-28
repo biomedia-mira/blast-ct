@@ -142,7 +142,6 @@ class RegistrationToCTTemplate(object):
         final_metric_aff_dict={}
         #image_path = data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item()
         #image = sitk.ReadImage(image_path)
-        print('already read image')
         try:
             image = sitk.ReadImage(data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item())
             print('Sucessfully read image ' + data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item())
