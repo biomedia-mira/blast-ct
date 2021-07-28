@@ -64,7 +64,7 @@ class LesionVolumeLocalisationMNI(object):
     def __call__(self, data_index, aff_transform, image_id):
         target_name = 'prediction'
         # get the atlas_label_map, brain mask and label_map in the native or atlas space
-        label_map = sitk.ReadImage(data_index.loc[data_index['id']==image_id,'target'])  # Predicted segmentation
+        label_map = sitk.ReadImage(data_index.loc[data_index['id']==image_id,'target'].item())  # Predicted segmentation
         atlas_label_map = self.atlas_label_map  # Parcellated atlas
         brain_mask = self.brain_mask
 

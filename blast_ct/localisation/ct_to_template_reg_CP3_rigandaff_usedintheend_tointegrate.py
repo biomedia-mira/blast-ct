@@ -121,8 +121,8 @@ class RegistrationToCTTemplate(object):
         image_column = 'image'
         #data_index = pd.read_csv(data_index_csv, index_col='id')
         final_metric_aff_dict={}
-        image_path = 'data/scans/scan_0/scan_0_image.nii.gz'
-        #image_path = data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column]
+        #image_path = 'data/scans/scan_0/scan_0_image.nii.gz'
+        image_path = data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item()
         image = sitk.ReadImage(image_path)
         print('already read image')
         #try:
