@@ -101,7 +101,7 @@ class NiftiPatchSaver(object):
             self.extra_output_patches[name] += list(state[name].cpu().detach())
 
     def __call__(self, state):
-
+        start_savers = time.time()
         self.append(state)
         target_shape, center_points = self.dataset.image_mapping[self.image_index]
         target_patch_shape = self.dataset.patch_sampler.target_patch_size
@@ -130,6 +130,9 @@ class NiftiPatchSaver(object):
             for name, array in to_write.items():
                 path = os.path.join(self.prediction_dir, f'{str(id_):s}_{name:s}.nii.gz')
                 self.data_index.loc[self.data_index['id'] == id_, name] = path
+                time_elapsed = time.time() - start_execute_rigid
+                passed_savers = time_elapsed % 3600 % 60
+                print(f'Since it entered savers until entering localisation took {passed_savers}s')
                 print('entered localisation')
                 self.data_index = save_image(array, input_image, path, self.prediction_dir, id_, self.dataset, self.localisation,
                            self.write_registration_info, self.number_of_runs, self.native_space, resolution)
