@@ -2,6 +2,7 @@ import os
 import torch
 import numpy as np
 import SimpleITK as sitk
+import time
 from blast_ct.nifti.datasets import FullImageToOverlappingPatchesNiftiDataset
 from blast_ct.nifti.patch_samplers import get_patch_and_padding
 from blast_ct.nifti.rescale import create_reference_reoriented_image
