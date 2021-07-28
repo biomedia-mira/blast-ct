@@ -131,7 +131,7 @@ class NiftiPatchSaver(object):
             for name, array in to_write.items():
                 path = os.path.join(self.prediction_dir, f'{str(id_):s}_{name:s}.nii.gz')
                 self.data_index.loc[self.data_index['id'] == id_, name] = path
-                time_elapsed = time.time() - start_execute_rigid
+                time_elapsed = time.time() - start_savers
                 passed_savers = time_elapsed % 3600 % 60
                 print(f'Since it entered savers until entering localisation took {passed_savers}s')
                 print('entered localisation')
