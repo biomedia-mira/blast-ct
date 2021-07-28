@@ -65,7 +65,6 @@ class LesionVolumeLocalisationMNI(object):
     def __call__(self, data_index, aff_transform, image_id, image, write_registration_info):
         target_name = 'prediction'
         # get the atlas_label_map, brain mask and label_map in the native or atlas space
-        print(image)
         label_map = image                       # Predicted segmentation
         atlas_label_map = self.atlas_label_map  # Parcellated atlas
         brain_mask = self.brain_mask
