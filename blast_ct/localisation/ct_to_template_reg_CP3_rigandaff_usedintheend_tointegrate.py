@@ -5,6 +5,7 @@ import argparse
 import os
 import re
 import operator
+import time
 
 class RegistrationToCTTemplate(object):
     def __init__(self, localisation_dir):
@@ -13,6 +14,7 @@ class RegistrationToCTTemplate(object):
         self.localisation_dir = localisation_dir
 
     def register_image_to_atlas(self, image):
+        start_rigid = time.time()
         # image was already read before
         image = sitk.Threshold(image, lower=-1024.0, upper=1e6, outsideValue=-1024.0)
         dimension = self.target_template.GetDimension()
@@ -62,17 +64,22 @@ class RegistrationToCTTemplate(object):
         # registration_method_rig.SetMovingInitialTransform(initial_transform_rig)
         # registration_method_rig.SetInitialTransform(optimized_transform_rig)
         registration_method_rig.SetInitialTransform(initial_transform_rig)
-
+        time_elapsed = time.time() - start_rigid
+        passed = time_elapsed % 3600 % 60
+        print(f'Finished defining rigid parameter took {passed}s')
         # Using the composite transformation we just add them in (stack based, first in - last applied).
         # mni_transform = sitk.ReadTransform(self.transform_mni)
         # final_rig_transform = sitk.CompositeTransform([registration_method_rig.Execute(self.target_template, image), initial_transform_rig])
+        start_execute_rigid = time.time()
         final_rig_transform = registration_method_rig.Execute(self.target_template, image)
-
+        time_elapsed = time.time() - start_execute_rigid
+        passed = time_elapsed % 3600 % 60
+        print(f'Finished executing rigid parameter took {passed}s')
         iterations_rig = registration_method_rig.GetOptimizerIteration()
         final_metric_value_rig = registration_method_rig.GetMetricValue()
 
         ######### Affine registration ################
-
+        start_parameters_affine = time.time()
         registration_method_rig.SetMetricAsMattesMutualInformation(numberOfHistogramBins=32)
         registration_method_rig.SetMetricSamplingStrategy(registration_method_rig.REGULAR)
         registration_method_rig.SetMetricSamplingPercentage(0.2)
@@ -88,8 +95,18 @@ class RegistrationToCTTemplate(object):
         registration_method_rig.SetMovingInitialTransform(final_rig_transform)
         optimized_transform_aff = sitk.AffineTransform(dimension)
         registration_method_rig.SetInitialTransform(optimized_transform_aff, inPlace=True)
+
+        time_elapsed = time.time() - start_parameters_affine
+        passed = time_elapsed % 3600 % 60
+        print(f'Finished affine parameter took {passed}s')
+
+        start_execute_affine = time.time()
         registration_method_rig.Execute(self.target_template, image)
+        time_elapsed = time.time() - start_execute_affine
+        passed = time_elapsed % 3600 % 60
+        print(f'Finished executing affine took {passed}s')
         #final_aff_transform = sitk.CompositeTransform([final_rig_transform, optimized_transform_aff])
+        start_last_affine = time.time()
         final_aff_transform = sitk.Transform()
         final_aff_transform.AddTransform(final_rig_transform)
         final_aff_transform.AddTransform(optimized_transform_aff)
@@ -105,6 +122,9 @@ class RegistrationToCTTemplate(object):
         resampler.SetDefaultPixelValue(filter.GetMinimum())
         resampler.SetTransform(final_aff_transform)
         image_resampled_aff = resampler.Execute(image)
+        time_elapsed = time.time() - start_last_affine
+        passed = time_elapsed % 3600 % 60
+        print(f'Finished executing last affine part took {passed}s')
 
 
         return final_aff_transform, iterations_rig, final_metric_value_rig, iterations_aff, final_metric_value_aff, image_resampled_aff
@@ -119,18 +139,16 @@ class RegistrationToCTTemplate(object):
 
     def __call__(self, data_index, write_reg_param, no_runs, image_id):
         image_column = 'image'
-        #data_index = pd.read_csv(data_index_csv, index_col='id')
         final_metric_aff_dict={}
-        #image_path = 'data/scans/scan_0/scan_0_image.nii.gz'
-        image_path = data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item()
-        image = sitk.ReadImage(image_path)
+        #image_path = data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item()
+        #image = sitk.ReadImage(image_path)
         print('already read image')
-        #try:
-        #    image = sitk.ReadImage(data_index.loc[data_index['id'] == image_id, image_column])
-        #    print('Sucessfully read image ' + data_index.loc[data_index['id'] == image_id, image_column])
-        #except RuntimeError:
-        #   print('Could not read image:' + data_index.loc[data_index['id'] == image_id, image_column])
-            #print(f'Could not read image: {image_id:s}')
+        try:
+            image = sitk.ReadImage(data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item())
+            print('Sucessfully read image ' + data_index.loc[data_index['id'] == image_id, image_column])
+        except RuntimeError:
+            print(f'Could not read image: {image_id:s}')
+            return data_index
 
 
         for iteration in range(0, no_runs):
