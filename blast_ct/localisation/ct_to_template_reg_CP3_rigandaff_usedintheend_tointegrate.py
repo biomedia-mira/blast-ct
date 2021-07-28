@@ -156,11 +156,11 @@ class RegistrationToCTTemplate(object):
             transform_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_transform.tfm')
             sitk.WriteTransform(transform, transform_path)
 
-            data_index.loc[data_index['id'] == image_id, 'iterations_rig'] = iterations_rig
-            data_index.loc[data_index['id'] == image_id, 'final_metric_rig'] = final_metric_rig
-            data_index.loc[data_index['id'] == image_id, 'iterations_aff'] = iterations_aff
-            data_index.loc[data_index['id'] == image_id, 'final_metric_aff'] = final_metric_aff
-            data_index.loc[data_index['id'] == image_id, 'image_resampled'] = image_resampled_path
-            data_index.loc[data_index['id'] == image_id, 'aff_transform'] = transform_path
+            data_index.data_index.loc[data_index.data_index['id'] == image_id, 'iterations_rig'] = iterations_rig
+            data_index.data_index.loc[data_index.data_index['id'] == image_id, 'final_metric_rig'] = final_metric_rig
+            data_index.data_index.loc[data_index.data_index['id'] == image_id, 'iterations_aff'] = iterations_aff
+            data_index.data_index.loc[data_index.data_index['id'] == image_id, 'final_metric_aff'] = final_metric_aff
+            data_index.data_index.loc[data_index.data_index['id'] == image_id, 'image_resampled'] = image_resampled_path
+            data_index.data_index.loc[data_index.data_index['id'] == image_id, 'aff_transform'] = transform_path
 
         return transform, data_index
