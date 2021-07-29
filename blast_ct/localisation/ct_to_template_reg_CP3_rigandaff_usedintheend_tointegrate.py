@@ -141,21 +141,23 @@ class RegistrationToCTTemplate(object):
         transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = final_metric_aff_dict[best_iter].values()
         return transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff
 
-    def __call__(self, data_index, write_reg_param, no_runs, image_id):
+    def __call__(self, data_index, write_reg_param, no_runs, image):
         image_column = 'image'
         final_metric_aff_dict={}
         #image_path = data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item()
         #image = sitk.ReadImage(image_path)
-        start_read2 = time.time()
-        try:
-            image = sitk.ReadImage(data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item())
-            print('Sucessfully read image ' + data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item())
-        except RuntimeError:
-            print(f'Could not read image: {image_id:s}')
-            return data_index
-        time_elapsed = time.time() - start_read2
-        passed = time_elapsed
-        print(f'Finished reading 2nd image took {passed}s')
+
+        # start_read2 = time.time()
+        #
+        # try:
+        #     image = sitk.ReadImage(data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item())
+        #     print('Sucessfully read image ' + data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item())
+        # except RuntimeError:
+        #     print(f'Could not read image: {image_id:s}')
+        #     return data_index
+        # time_elapsed = time.time() - start_read2
+        # passed = time_elapsed
+        # print(f'Finished reading 2nd image took {passed}s')
 
         for iteration in range(0, no_runs):
             try:
@@ -181,12 +183,11 @@ class RegistrationToCTTemplate(object):
             transform_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_transform.tfm')
             sitk.WriteTransform(transform, transform_path)
 
-            data_index.data_index.loc[data_index.data_index['id'] == image_id, 'iterations_rig'] = iterations_rig
-            data_index.data_index.loc[data_index.data_index['id'] == image_id, 'final_metric_rig'] = final_metric_rig
-            data_index.data_index.loc[data_index.data_index['id'] == image_id, 'iterations_aff'] = iterations_aff
-            data_index.data_index.loc[data_index.data_index['id'] == image_id, 'final_metric_aff'] = final_metric_aff
-            data_index.data_index.loc[data_index.data_index['id'] == image_id, 'image_resampled'] = resampled_image_path
-            data_index.data_index.loc[data_index.data_index['id'] == image_id, 'aff_transform'] = transform_path
-            data_index = data_index.data_index
+            data_index.loc[data_index['id'] == image_id, 'iterations_rig'] = iterations_rig
+            data_index.loc[data_index['id'] == image_id, 'final_metric_rig'] = final_metric_rig
+            data_index.loc[data_index['id'] == image_id, 'iterations_aff'] = iterations_aff
+            data_index.loc[data_index['id'] == image_id, 'final_metric_aff'] = final_metric_aff
+            data_index.loc[data_index['id'] == image_id, 'image_resampled'] = resampled_image_path
+            data_index.loc[data_index['id'] == image_id, 'aff_transform'] = transform_path
 
         return transform, data_index

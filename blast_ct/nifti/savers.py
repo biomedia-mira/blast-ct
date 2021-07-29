@@ -22,8 +22,7 @@ def add_predicted_volumes_to_dataframe(dataframe, id_, array, resolution):
     return dataframe
 
 
-def save_image(output_array, input_image, path, localisation_dir, image_id, data_index, localisation, write_registration_info,
-               number_of_runs, native_space, resolution=None):
+def save_image(output_array, input_image, path, resolution=None):
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
     image = sitk.GetImageFromArray(output_array)
@@ -32,20 +31,8 @@ def save_image(output_array, input_image, path, localisation_dir, image_id, data
     image.SetDirection(reference.GetDirection())
     image.SetSpacing(resolution) if resolution is not None else image.SetSpacing(reference.GetSpacing())
     image = sitk.Resample(image, input_image, sitk.Transform(), sitk.sitkNearestNeighbor, 0)
-    image = sitk.Cast(image, sitk.sitkVectorUInt32)
-    if localisation:
-        start_reg = time.time()
-        transform, data_index_post_reg = RegistrationToCTTemplate(localisation_dir)(data_index, write_registration_info,
-                                                                           number_of_runs, image_id)
-        time_elapsed = time.time() - start_reg
-        passed = time_elapsed
-        print(f'Finished registration took {passed}s')
-        data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space)(data_index_post_reg, transform, image_id,
-                                                                             image, write_registration_info)
-    else:
-        data_index_post_localise = data_index
     sitk.WriteImage(image, path)
-    return data_index_post_localise
+    return image
 
 
 def get_num_maps(patches):
@@ -70,6 +57,20 @@ def reconstruct_image(patches, image_shape, center_points, patch_shape):
     reconstruction = reconstruction.transpose(tuple(range(1, reconstruction.ndim)) + (0,))
     return reconstruction
 
+def localise(data_index, input_image, prediction_, localisation_dir, image_id, write_registration_info,
+               number_of_runs, native_space):
+    if not os.path.exists(os.path.dirname(localisation_dir)):
+        os.makedirs(localisation_dir)
+    start_reg = time.time()
+    transform, data_index_post_reg = RegistrationToCTTemplate(localisation_dir)(data_index, write_registration_info,
+                                                                       number_of_runs, input_image)
+    time_elapsed = time.time() - start_reg
+    passed = time_elapsed
+    print(f'Finished registration took {passed}s')
+    data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space)(transform, data_index_post_reg, image_id,
+                                                                         prediction_, write_registration_info)
+
+    return data_index_post_localise
 
 class NiftiPatchSaver(object):
     def __init__(self, job_dir, dataloader, write_prob_maps=True, extra_output_names=None,
@@ -139,15 +140,19 @@ class NiftiPatchSaver(object):
                 path = os.path.join(self.prediction_dir, f'{str(id_):s}_{name:s}.nii.gz')
                 self.data_index.loc[self.data_index['id'] == id_, name] = path
                 time_elapsed = time.time() - start_savers
-                passed_savers = time_elapsed % 3600 % 60
+                passed_savers = time_elapsed
                 print(f'Since it entered savers until entering localisation took {passed_savers}s')
                 print('entered localisation')
-                self.data_index = save_image(array, input_image, path, self.prediction_dir, id_, self.dataset, self.localisation,
-                           self.write_registration_info, self.number_of_runs, self.native_space, resolution)
+                saved_image = save_image(array, input_image, path, resolution)
 
                 if name == 'prediction':
                     resolution_ = resolution if resolution is not None else input_image.GetSpacing()
                     self.data_index = add_predicted_volumes_to_dataframe(self.data_index, id_, array, resolution_)
+                    if localisation:
+                        self.data_index = localise(self.data_index, input_image, saved_image, self.localisation_dir,
+                                                   id_, self.write_registration_info,
+                                                   self.number_of_runs, self.native_space)
+
             self.image_index += 1
             message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Saved prediction for {str(id_)}."
             if self.image_index >= len(self.dataset.image_mapping):

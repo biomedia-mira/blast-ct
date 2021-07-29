@@ -62,7 +62,7 @@ class LesionVolumeLocalisationMNI(object):
         return localised_volumes, region_volumes
 
     # data_index_csv is the csv file the user submits with the lesion maps paths (I think)
-    def __call__(self, data_index, aff_transform, image_id, image, write_registration_info):
+    def __call__(self, aff_transform, data_index, image_id, image, write_registration_info):
         target_name = 'prediction'
         # get the atlas_label_map, brain mask and label_map in the native or atlas space
         label_map = image                       # Predicted segmentation
