@@ -42,6 +42,8 @@ def save_image(output_array, input_image, path, localisation_dir, image_id, data
         print(f'Finished registration took {passed}s')
         data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space)(data_index_post_reg, transform, image_id,
                                                                              image, write_registration_info)
+    else:
+        data_index_post_localise = data_index
     sitk.WriteImage(image, path)
     return data_index_post_localise
 
