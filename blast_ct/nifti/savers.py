@@ -34,8 +34,12 @@ def save_image(output_array, input_image, path, localisation_dir, image_id, data
     image = sitk.Resample(image, input_image, sitk.Transform(), sitk.sitkNearestNeighbor, 0)
     image = sitk.Cast(image, sitk.sitkVectorUInt32)
     if localisation:
+        start_reg = time.time()
         transform, data_index_post_reg = RegistrationToCTTemplate(localisation_dir)(data_index, write_registration_info,
                                                                            number_of_runs, image_id)
+        time_elapsed = time.time() - start_reg
+        passed = time_elapsed
+        print(f'Finished registration took {passed}s')
         data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space)(data_index_post_reg, transform, image_id,
                                                                              image, write_registration_info)
     sitk.WriteImage(image, path)
