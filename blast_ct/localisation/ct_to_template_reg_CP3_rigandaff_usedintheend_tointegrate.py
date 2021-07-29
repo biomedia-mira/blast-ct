@@ -141,7 +141,7 @@ class RegistrationToCTTemplate(object):
         transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = final_metric_aff_dict[best_iter].values()
         return transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff
 
-    def __call__(self, data_index, write_reg_param, no_runs, image):
+    def __call__(self, data_index, write_reg_param, no_runs, image, image_id):
         image_column = 'image'
         final_metric_aff_dict={}
         #image_path = data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item()

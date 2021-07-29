@@ -63,7 +63,7 @@ def localise(data_index, input_image, prediction_, localisation_dir, image_id, w
         os.makedirs(localisation_dir)
     start_reg = time.time()
     transform, data_index_post_reg = RegistrationToCTTemplate(localisation_dir)(data_index, write_registration_info,
-                                                                       number_of_runs, input_image)
+                                                                       number_of_runs, input_image, image_id)
     time_elapsed = time.time() - start_reg
     passed = time_elapsed
     print(f'Finished registration took {passed}s')
