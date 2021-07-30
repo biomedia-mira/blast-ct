@@ -59,7 +59,7 @@ def reconstruct_image(patches, image_shape, center_points, patch_shape):
 
 def localise(data_index, input_image, prediction_, localisation_dir, image_id, write_registration_info,
                number_of_runs, native_space):
-    if not os.path.exists(os.path.dirname(localisation_dir)):
+    if not os.path.exists(localisation_dir):
         os.makedirs(localisation_dir)
     start_reg = time.time()
     transform, data_index_post_reg = RegistrationToCTTemplate(localisation_dir)(data_index, write_registration_info,
@@ -69,6 +69,7 @@ def localise(data_index, input_image, prediction_, localisation_dir, image_id, w
     print(f'Finished registration took {passed}s')
     data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space)(transform, data_index_post_reg, image_id,
                                                                          prediction_, write_registration_info)
+
 
     return data_index_post_localise
 
@@ -110,7 +111,6 @@ class NiftiPatchSaver(object):
             self.extra_output_patches[name] += list(state[name].cpu().detach())
 
     def __call__(self, state):
-        start_savers = time.time()
         self.append(state)
         target_shape, center_points = self.dataset.image_mapping[self.image_index]
         target_patch_shape = self.dataset.patch_sampler.target_patch_size
@@ -130,6 +130,7 @@ class NiftiPatchSaver(object):
             else:
                 to_write['prediction'] = reconstruction
 
+
             for name in self.extra_output_patches:
                 patches = list(torch.stack(self.extra_output_patches[name][0:patches_in_image]).numpy())
                 self.extra_output_patches[name] = self.extra_output_patches[name][patches_in_image:]
@@ -139,10 +140,6 @@ class NiftiPatchSaver(object):
             for name, array in to_write.items():
                 path = os.path.join(self.prediction_dir, f'{str(id_):s}_{name:s}.nii.gz')
                 self.data_index.loc[self.data_index['id'] == id_, name] = path
-                time_elapsed = time.time() - start_savers
-                passed_savers = time_elapsed
-                print(f'Since it entered savers until entering localisation took {passed_savers}s')
-                print('entered localisation')
                 saved_image = save_image(array, input_image, path, resolution)
 
                 if name == 'prediction':

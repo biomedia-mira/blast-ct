@@ -21,7 +21,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
 
     with open(config_file, 'r') as f:
         config = json.load(f)
-
+    print('write prob maps: ', write_prob_maps)
     model = get_model(config)
     device = set_device(device)
     use_cuda = device.type != 'cpu'

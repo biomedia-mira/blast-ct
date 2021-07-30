@@ -68,6 +68,8 @@ class LesionVolumeLocalisationMNI(object):
         label_map = image                       # Predicted segmentation
         atlas_label_map = self.atlas_label_map  # Parcellated atlas
         brain_mask = self.brain_mask
+        pixeltype = label_map.GetPixelIDTypeAsString()
+        print('pixel type: ', pixeltype)
 
         if self.native_space:
             # If we want to work on native space, we need to put everything that is in MNI space (parcellated
