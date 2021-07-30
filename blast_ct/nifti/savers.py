@@ -67,6 +67,7 @@ def localise(data_index, input_image, prediction_, localisation_dir, image_id, w
     time_elapsed = time.time() - start_reg
     passed = time_elapsed
     print(f'Finished registration took {passed}s')
+    print(prediction_)
     data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space)(transform, data_index_post_reg, image_id,
                                                                          prediction_, write_registration_info)
 
@@ -141,12 +142,11 @@ class NiftiPatchSaver(object):
                 path = os.path.join(self.prediction_dir, f'{str(id_):s}_{name:s}.nii.gz')
                 self.data_index.loc[self.data_index['id'] == id_, name] = path
                 saved_image = save_image(array, input_image, path, resolution)
-
                 if name == 'prediction':
                     resolution_ = resolution if resolution is not None else input_image.GetSpacing()
                     self.data_index = add_predicted_volumes_to_dataframe(self.data_index, id_, array, resolution_)
                     if self.localisation:
-                        self.data_index = localise(self.data_index, input_image, saved_image, self.prediction_dir,
+                        self.data_index = localise(self.data_index, input_image, saved_image, self.localisation_dir,
                                                    id_, self.write_registration_info,
                                                    self.number_of_runs, self.native_space)
 
