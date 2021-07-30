@@ -55,8 +55,13 @@ class LesionVolumeLocalisationMNI(object):
                 # to be in the background, it should be flagged
                 if class_label == 0:
                     continue
+
+                masked_label_map_array = sitk.GetArrayFromImage(masked_label_map)
+                masked_label_map_class = np.where(masked_label_map_array == class_label, 1, 0)
+                masked_label_map_class = sitk.GetImageFromArray(masked_label_map_class)
+
                 # Calculate the volume of each class type in the overlap between the region and lesion
-                localised_volumes[class_name][roi_name] = self.calc_volume_ml(masked_label_map == class_label)
+                localised_volumes[class_name][roi_name] = self.calc_volume_ml(masked_label_map_class)
                 # From this function we take the volume per lesion class and per anatomical roi; and each roi's volume
                 # What if we have several lesions in one scan? the label_map is per CT scan or per lesion?
         return localised_volumes, region_volumes
@@ -89,7 +94,7 @@ class LesionVolumeLocalisationMNI(object):
                 continue
             # The max of label_map == class_label is always 1
             label_map_array = sitk.GetArrayFromImage(label_map)
-            label_map_class = np.where(label_map_array == class_label)
+            label_map_class = np.where(label_map_array == class_label, 1, 0)
             label_map_class = sitk.GetImageFromArray(label_map_class)
             data_index.loc[data_index['id'] == image_id, f'{target_name}_{class_name:s}_ml'] = self.calc_volume_ml(label_map_class)
 
