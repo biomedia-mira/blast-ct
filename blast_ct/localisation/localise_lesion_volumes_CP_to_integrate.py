@@ -88,7 +88,12 @@ class LesionVolumeLocalisationMNI(object):
             if class_label == 0:
                 continue
             # The max of label_map == class_label is always 1
-            data_index.loc[data_index['id']==image_id, f'{target_name}_{class_name:s}_ml'] = self.calc_volume_ml(label_map == class_label)
+            label_map_array = sitk.GetArrayFromImage(label_map)
+            label_map_class = np.where(label_map_array == class_label)
+            label_map_class = sitk.GetImageFromArray(label_map_class)
+            data_index.loc[data_index['id'] == image_id, f'{target_name}_{class_name:s}_ml'] = self.calc_volume_ml(label_map_class)
+
+            # data_index.loc[data_index['id']==image_id, f'{target_name}_{class_name:s}_ml'] = self.calc_volume_ml(label_map == class_label)
 
         # localise lesion volumes
         # localised_volumes is a dictionary: volume of lesion per lesion class and per anatomical ROI

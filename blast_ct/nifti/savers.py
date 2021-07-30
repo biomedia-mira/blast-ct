@@ -71,7 +71,6 @@ def localise(data_index, input_image, prediction_, localisation_dir, image_id, w
     data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space)(transform, data_index_post_reg, image_id,
                                                                          prediction_, write_registration_info)
 
-
     return data_index_post_localise
 
 class NiftiPatchSaver(object):
