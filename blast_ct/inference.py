@@ -8,7 +8,7 @@ from blast_ct.nifti.savers import NiftiPatchSaver
 from blast_ct.localisation.ct_to_template_reg_CP3_rigandaff_usedintheend_tointegrate import RegistrationToCTTemplate
 from blast_ct.localisation.localise_lesion_volumes_CP_to_integrate import LesionVolumeLocalisationMNI
 
-def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, localisation,
+def run_inference(install_dir, job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, localisation,
                   write_registration_info, number_of_runs,overwrite, native_space):
     if not os.path.exists(job_dir):
         os.makedirs(job_dir)
@@ -47,7 +47,6 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
 
 def inference():
     install_dir = os.path.dirname(os.path.realpath(__file__))
-    # What is this config.json file?
     default_config = os.path.join(install_dir, 'data/config.json')
     saved_model_paths = [os.path.join(install_dir, f'data/saved_models/model_{i:d}.pt') for i in range(1, 13)]
     default_model_paths = ' '.join(saved_model_paths)
@@ -108,7 +107,7 @@ def inference():
 
     parse_args, unknown = parser.parse_known_args()
 
-    run_inference(**parse_args.__dict__)
+    run_inference(install_dir, **parse_args.__dict__)
 
 
 if __name__ == "__main__":
