@@ -67,7 +67,7 @@ def localise(data_index, input_image, prediction_, localisation_dir, image_id, w
     time_elapsed = time.time() - start_reg
     passed = time_elapsed
     print(f'Finished registration took {passed}s')
-    data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space, localisation_files[1:3])(transform, data_index_post_reg, image_id,
+    data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space, localisation_files[1:4])(transform, data_index_post_reg, image_id,
                                                                          prediction_, write_registration_info)
 
     return data_index_post_localise
