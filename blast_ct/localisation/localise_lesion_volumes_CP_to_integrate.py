@@ -4,11 +4,12 @@ import pandas as pd
 import numpy as np
 
 class LesionVolumeLocalisationMNI(object):
-    def __init__(self, localisation_dir, native_space=True):
+    def __init__(self, localisation_dir, native_space, localisation_files_list):
         # The parcellated atlas in study specific space (CT template space)
-        atlas_label_map_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'mean_template_7_u_lobe_atlas_ero_dil.nii.gz')
-        roi_dictionary_csv = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lobe_labels.csv')
-        brain_mask_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'mean_template_7_u_mask.nii.gz')
+        atlas_label_map_path = localisation_files_list[0]
+        brain_mask_path = localisation_files_list[1]
+        roi_dictionary_csv = localisation_files_list[2]
+
 
         # Reading all the images
         self.atlas_label_map = sitk.ReadImage(atlas_label_map_path)
@@ -62,6 +63,7 @@ class LesionVolumeLocalisationMNI(object):
 
                 # Calculate the volume of each class type in the overlap between the region and lesion
                 localised_volumes[class_name][roi_name] = self.calc_volume_ml(masked_label_map_class)
+                # localised_volumes[class_name][roi_name] = self.calc_volume_ml(masked_label_map == class_label)
                 # From this function we take the volume per lesion class and per anatomical roi; and each roi's volume
                 # What if we have several lesions in one scan? the label_map is per CT scan or per lesion?
         return localised_volumes, region_volumes
@@ -89,14 +91,14 @@ class LesionVolumeLocalisationMNI(object):
 
         # add summary statistics
         # Calculate full volume of each lesion class
-        for class_label, class_name in enumerate(self.class_names):
-            if class_label == 0:
-                continue
+        #for class_label, class_name in enumerate(self.class_names):
+        #    if class_label == 0:
+        #        continue
             # The max of label_map == class_label is always 1
-            label_map_array = sitk.GetArrayFromImage(label_map)
-            label_map_class = np.where(label_map_array == class_label, 1, 0)
-            label_map_class = sitk.GetImageFromArray(label_map_class)
-            data_index.loc[data_index['id'] == image_id, f'{target_name}_{class_name:s}_ml'] = self.calc_volume_ml(label_map_class)
+        #    label_map_array = sitk.GetArrayFromImage(label_map)
+        #    label_map_class = np.where(label_map_array == class_label, 1, 0)
+        #    label_map_class = sitk.GetImageFromArray(label_map_class)
+        #    data_index.loc[data_index['id'] == image_id, f'{target_name}_{class_name:s}_ml'] = self.calc_volume_ml(label_map_class)
 
             # data_index.loc[data_index['id']==image_id, f'{target_name}_{class_name:s}_ml'] = self.calc_volume_ml(label_map == class_label)
 

@@ -27,7 +27,10 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     use_cuda = device.type != 'cpu'
     test_loader = get_test_loader(config, model, test_csv_path, use_cuda)
     extra_output_names = config['test']['extra_output_names'] if 'extra_output_names' in config['test'] else None
-    saver = NiftiPatchSaver(job_dir, test_loader, write_prob_maps=write_prob_maps,
+    localisation_files_list = ['ct_template.nii.gz', 'atlas_template_space.nii.gz',
+                                   'ct_template_mask.nii.gz', 'atlas_labels.csv']
+    localisation_files =[os.path.join(install_dir, f'data/localisation_files/{i:d}') for i in localisation_files_list]
+    saver = NiftiPatchSaver(job_dir, test_loader, localisation_files, write_prob_maps=write_prob_maps,
                             extra_output_names=extra_output_names, localisation = localisation,
                             number_of_runs = number_of_runs, native_space = native_space,
                             write_registration_info = write_registration_info)

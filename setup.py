@@ -14,8 +14,8 @@ setuptools.setup(
     url="https://github.com/biomedia-mira/blast_ct",
     packages=['blast_ct', 'blast_ct.models', 'blast_ct.nifti', 'blast_ct.trainer', 'blast_ct.localisation'],
     package_data={'': ['data/saved_models/*.pt', 'data/config.json', 'README.md',
-                       'localisation/*.nii.gz',
-                       'localisation/lobe_labels.csv']},
+                       'data/localisation_files/*.nii.gz',
+                       'data/localisation_files/lobe_labels.csv']},
     entry_points={
         'console_scripts': [
             'blast-ct = blast_ct.console_tool:console_tool',

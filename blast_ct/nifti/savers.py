@@ -58,29 +58,29 @@ def reconstruct_image(patches, image_shape, center_points, patch_shape):
     return reconstruction
 
 def localise(data_index, input_image, prediction_, localisation_dir, image_id, write_registration_info,
-               number_of_runs, native_space):
+               number_of_runs, native_space, localisation_files):
     if not os.path.exists(localisation_dir):
         os.makedirs(localisation_dir)
     start_reg = time.time()
-    transform, data_index_post_reg = RegistrationToCTTemplate(localisation_dir)(data_index, write_registration_info,
+    transform, data_index_post_reg = RegistrationToCTTemplate(localisation_dir, localisation_files[0])(data_index, write_registration_info,
                                                                        number_of_runs, input_image, image_id)
     time_elapsed = time.time() - start_reg
     passed = time_elapsed
     print(f'Finished registration took {passed}s')
-    print(prediction_)
-    data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space)(transform, data_index_post_reg, image_id,
+    data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space, localisation_files[1:3])(transform, data_index_post_reg, image_id,
                                                                          prediction_, write_registration_info)
 
     return data_index_post_localise
 
 class NiftiPatchSaver(object):
-    def __init__(self, job_dir, dataloader, write_prob_maps=True, extra_output_names=None,
+    def __init__(self, job_dir, dataloader, localisation_files, write_prob_maps=True, extra_output_names=None,
                  localisation = False, number_of_runs = 1, native_space = True,
                  write_registration_info=False):
         assert isinstance(dataloader.dataset, FullImageToOverlappingPatchesNiftiDataset)
 
         self.prediction_dir = os.path.join(job_dir, 'predictions')
         self.localisation_dir = os.path.join(job_dir, 'localisation')
+        self.localisation_files = localisation_files
         self.dataloader = dataloader
         self.dataset = dataloader.dataset
         self.write_prob_maps = write_prob_maps
@@ -147,7 +147,7 @@ class NiftiPatchSaver(object):
                     if self.localisation:
                         self.data_index = localise(self.data_index, input_image, saved_image, self.localisation_dir,
                                                    id_, self.write_registration_info,
-                                                   self.number_of_runs, self.native_space)
+                                                   self.number_of_runs, self.native_space, self.localisation_files)
 
             self.image_index += 1
             message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Saved prediction for {str(id_)}."

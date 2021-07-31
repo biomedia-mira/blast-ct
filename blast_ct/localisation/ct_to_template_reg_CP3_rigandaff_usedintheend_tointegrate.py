@@ -8,9 +8,9 @@ import operator
 import time
 
 class RegistrationToCTTemplate(object):
-    def __init__(self, localisation_dir):
+    def __init__(self, localisation_dir, target_template_path):
         start_read1 = time.time()
-        self.target_template_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),'mean_template_7_u.nii.gz')
+        self.target_template_path = target_template_path
         self.target_template = sitk.ReadImage(self.target_template_path)
         time_elapsed = time.time() - start_read1
         passed = time_elapsed
