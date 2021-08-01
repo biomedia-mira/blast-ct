@@ -15,7 +15,7 @@ setuptools.setup(
     packages=['blast_ct', 'blast_ct.models', 'blast_ct.nifti', 'blast_ct.trainer', 'blast_ct.localisation'],
     package_data={'': ['data/saved_models/*.pt', 'data/config.json', 'README.md',
                        'data/localisation_files/*.nii.gz',
-                       'data/localisation_files/lobe_labels.csv']},
+                       'data/localisation_files/atlas_labels.csv']},
     entry_points={
         'console_scripts': [
             'blast-ct = blast_ct.console_tool:console_tool',
