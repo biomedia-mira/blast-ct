@@ -18,10 +18,9 @@ class RegistrationToCTTemplate(object):
         self.localisation_dir = localisation_dir
 
     def register_image_to_atlas(self, image):
-        start_rigid = time.time()
-        # image was already read before
         image = sitk.Threshold(image, lower=-1024.0, upper=1e6, outsideValue=-1024.0)
         dimension = self.target_template.GetDimension()
+
         # Rigid registration of image to target_template
 
         # Set the initial moving transforms.
@@ -42,7 +41,6 @@ class RegistrationToCTTemplate(object):
         registration_method_rig.SetInterpolator(sitk.sitkLinear)
 
         # Optimizer settings:
-
         registration_method_rig.SetOptimizerAsGradientDescentLineSearch(learningRate=0.1,
                                                                     numberOfIterations=200,
                                                                     convergenceMinimumValue=1e-6,
@@ -59,21 +57,10 @@ class RegistrationToCTTemplate(object):
         registration_method_rig.SetSmoothingSigmasPerLevel(smoothingSigmas=[4, 2, 1])
         registration_method_rig.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()  # mm
 
-        # Set the initial moving and optimized transforms.
-        # SetMovingInitialTransform: maps points from the virtual img domain to the moving img domain,never modified.
-        # SetInitialTransform: composed with the moving initial transform, maps points from the virtual image domain
-        # to the moving image domain, modified during optimization.
+        # Set the initial transform
 
-        # optimized_transform_rig = sitk.Euler3DTransform()   # Identity
-        # registration_method_rig.SetMovingInitialTransform(initial_transform_rig)
-        # registration_method_rig.SetInitialTransform(optimized_transform_rig)
         registration_method_rig.SetInitialTransform(initial_transform_rig)
-        time_elapsed = time.time() - start_rigid
-        passed = time_elapsed
-        print(f'Finished defining rigid parameter took {passed}s')
-        # Using the composite transformation we just add them in (stack based, first in - last applied).
-        # mni_transform = sitk.ReadTransform(self.transform_mni)
-        # final_rig_transform = sitk.CompositeTransform([registration_method_rig.Execute(self.target_template, image), initial_transform_rig])
+
         start_execute_rigid = time.time()
         final_rig_transform = registration_method_rig.Execute(self.target_template, image)
         time_elapsed = time.time() - start_execute_rigid
@@ -83,6 +70,7 @@ class RegistrationToCTTemplate(object):
         final_metric_value_rig = registration_method_rig.GetMetricValue()
 
         ######### Affine registration ################
+
         start_parameters_affine = time.time()
         registration_method_rig.SetMetricAsMattesMutualInformation(numberOfHistogramBins=32)
         registration_method_rig.SetMetricSamplingStrategy(registration_method_rig.REGULAR)
@@ -142,23 +130,7 @@ class RegistrationToCTTemplate(object):
         return transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff
 
     def __call__(self, data_index, write_reg_param, no_runs, image, image_id):
-        image_column = 'image'
         final_metric_aff_dict={}
-        #image_path = data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item()
-        #image = sitk.ReadImage(image_path)
-
-        # start_read2 = time.time()
-        #
-        # try:
-        #     image = sitk.ReadImage(data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item())
-        #     print('Sucessfully read image ' + data_index.data_index.loc[data_index.data_index['id'] == image_id, image_column].item())
-        # except RuntimeError:
-        #     print(f'Could not read image: {image_id:s}')
-        #     return data_index
-        # time_elapsed = time.time() - start_read2
-        # passed = time_elapsed
-        # print(f'Finished reading 2nd image took {passed}s')
-
         for iteration in range(0, no_runs):
             try:
                 transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = \
