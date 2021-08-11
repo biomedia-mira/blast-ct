@@ -24,7 +24,6 @@ def console_tool():
     parser.add_argument('--ensemble', help='Whether to use the ensemble (slower but more precise)', type=bool,
                         default=False)
     parser.add_argument('--device', help='GPU device index (int) or \'cpu\' (str)', default='cpu')
-    parser.add_argument('--device', help='GPU device index (int) or \'cpu\' (str)', default='cpu')
     parser.add_argument('--localisation', default=False, action='store_true', help='Whether to run localisation or not')
 
     parse_args, unknown = parser.parse_known_args()
