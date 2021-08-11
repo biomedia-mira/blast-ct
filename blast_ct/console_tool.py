@@ -55,7 +55,7 @@ def console_tool():
                                'ct_template_mask.nii.gz', 'atlas_labels.csv']
     localisation_files = [os.path.join(install_dir, f'data/localisation_files/{i}') for i in localisation_files_list]
     saver = NiftiPatchSaver(job_dir, test_loader, localisation_files, write_prob_maps=False,
-                            localisation=localisation, number_of_runs=number_of_runs,
+                            localisation=parse_args.localisation, number_of_runs=number_of_runs,
                             native_space=native_space, write_registration_info=write_registration_info)
 
     if not parse_args.ensemble:
