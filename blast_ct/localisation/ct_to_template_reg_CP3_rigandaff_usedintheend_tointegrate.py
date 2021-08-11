@@ -7,6 +7,7 @@ import re
 import operator
 import time
 
+
 class RegistrationToCTTemplate(object):
     def __init__(self, localisation_dir, target_template_path):
         start_read1 = time.time()
@@ -42,10 +43,9 @@ class RegistrationToCTTemplate(object):
 
         # Optimizer settings:
         registration_method_rig.SetOptimizerAsGradientDescentLineSearch(learningRate=0.1,
-                                                                    numberOfIterations=200,
-                                                                    convergenceMinimumValue=1e-6,
-                                                                    convergenceWindowSize=5)
-
+                                                                        numberOfIterations=200,
+                                                                        convergenceMinimumValue=1e-6,
+                                                                        convergenceWindowSize=5)
 
         # As we are working with a transformation which parameter space includes both translation and rotation, and
         # mm and radians are not commensurate, and we would like the change of on mm and one radian to have a similar
@@ -69,7 +69,7 @@ class RegistrationToCTTemplate(object):
         iterations_rig = registration_method_rig.GetOptimizerIteration()
         final_metric_value_rig = registration_method_rig.GetMetricValue()
 
-        ######### Affine registration ################
+        ########### Affine registration ################
 
         start_parameters_affine = time.time()
         registration_method_rig.SetMetricAsMattesMutualInformation(numberOfHistogramBins=32)
@@ -77,9 +77,9 @@ class RegistrationToCTTemplate(object):
         registration_method_rig.SetMetricSamplingPercentage(0.2)
         registration_method_rig.SetInterpolator(sitk.sitkLinear)
         registration_method_rig.SetOptimizerAsGradientDescentLineSearch(learningRate=0.1,
-                                                                    numberOfIterations=200,
-                                                                    convergenceMinimumValue=1e-6,
-                                                                    convergenceWindowSize=5)
+                                                                        numberOfIterations=200,
+                                                                        convergenceMinimumValue=1e-6,
+                                                                        convergenceWindowSize=5)
         registration_method_rig.SetOptimizerScalesFromPhysicalShift()
         registration_method_rig.SetShrinkFactorsPerLevel(shrinkFactors=[4, 2, 1])
         registration_method_rig.SetSmoothingSigmasPerLevel(smoothingSigmas=[4, 2, 1])
@@ -97,7 +97,7 @@ class RegistrationToCTTemplate(object):
         time_elapsed = time.time() - start_execute_affine
         passed = time_elapsed
         print(f'Finished executing affine took {passed}s')
-        #final_aff_transform = sitk.CompositeTransform([final_rig_transform, optimized_transform_aff])
+        # final_aff_transform = sitk.CompositeTransform([final_rig_transform, optimized_transform_aff])
         start_last_affine = time.time()
         final_aff_transform = sitk.Transform()
         final_aff_transform.AddTransform(final_rig_transform)
@@ -105,32 +105,31 @@ class RegistrationToCTTemplate(object):
         iterations_aff = registration_method_rig.GetOptimizerIteration()
         final_metric_value_aff = registration_method_rig.GetMetricValue()
 
-        filter = sitk.MinimumMaximumImageFilter()
-        filter.Execute(image)
+        min_filter = sitk.MinimumMaximumImageFilter()
+        min_filter.Execute(image)
 
         resampler = sitk.ResampleImageFilter()
         resampler.SetReferenceImage(self.target_template)
         resampler.SetInterpolator(sitk.sitkLinear)
-        resampler.SetDefaultPixelValue(filter.GetMinimum())
+        resampler.SetDefaultPixelValue(min_filter.GetMinimum())
         resampler.SetTransform(final_aff_transform)
         image_resampled_aff = resampler.Execute(image)
         time_elapsed = time.time() - start_last_affine
         passed = time_elapsed
         print(f'Finished executing last affine part took {passed}s')
 
-
         return final_aff_transform, iterations_rig, final_metric_value_rig, iterations_aff, final_metric_value_aff, image_resampled_aff
 
     def best_run(self, final_metric_aff_dict, no_runs):
         sm_values = {}
         for iteration in range(0, no_runs):
-            sm_values[iteration] = final_metric_aff_dict.get(iteration,{}).get('final_metric_aff')
+            sm_values[iteration] = final_metric_aff_dict.get(iteration, {}).get('final_metric_aff')
         best_iter = min(sm_values.items(), key=operator.itemgetter(1))[0]
         transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = final_metric_aff_dict[best_iter].values()
         return transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff
 
     def __call__(self, data_index, write_reg_param, no_runs, image, image_id):
-        final_metric_aff_dict={}
+        final_metric_aff_dict = {}
         for iteration in range(0, no_runs):
             try:
                 transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = \
