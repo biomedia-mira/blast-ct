@@ -57,24 +57,32 @@ def reconstruct_image(patches, image_shape, center_points, patch_shape):
     reconstruction = reconstruction.transpose(tuple(range(1, reconstruction.ndim)) + (0,))
     return reconstruction
 
+
 def localise(data_index, input_image, prediction_, localisation_dir, image_id, write_registration_info,
-               number_of_runs, native_space, localisation_files):
+             number_of_runs, native_space, localisation_files):
     if not os.path.exists(localisation_dir):
         os.makedirs(localisation_dir)
     start_reg = time.time()
-    transform, data_index_post_reg = RegistrationToCTTemplate(localisation_dir, localisation_files[0])(data_index, write_registration_info,
-                                                                       number_of_runs, input_image, image_id)
+    transform, data_index_post_reg = RegistrationToCTTemplate(localisation_dir,
+                                                              localisation_files[0])(data_index,
+                                                                                     write_registration_info,
+                                                                                     number_of_runs, input_image,
+                                                                                     image_id)
     time_elapsed = time.time() - start_reg
     passed = time_elapsed
     print(f'Finished registration took {passed}s')
-    data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space, localisation_files[1:4])(transform, data_index_post_reg, image_id,
-                                                                         prediction_, write_registration_info)
+    data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space,
+                                                           localisation_files[1:4])(transform,
+                                                                                    data_index_post_reg,
+                                                                                    image_id, prediction_,
+                                                                                    write_registration_info)
 
     return data_index_post_localise
 
+
 class NiftiPatchSaver(object):
     def __init__(self, job_dir, dataloader, localisation_files, write_prob_maps=True, extra_output_names=None,
-                 localisation = False, number_of_runs = 1, native_space = True,
+                 localisation=False, number_of_runs=1, native_space=True,
                  write_registration_info=False):
         assert isinstance(dataloader.dataset, FullImageToOverlappingPatchesNiftiDataset)
 
@@ -129,7 +137,6 @@ class NiftiPatchSaver(object):
                 to_write['prediction'] = np.argmax(reconstruction, axis=-1).astype(np.float64)
             else:
                 to_write['prediction'] = reconstruction
-
 
             for name in self.extra_output_patches:
                 patches = list(torch.stack(self.extra_output_patches[name][0:patches_in_image]).numpy())
