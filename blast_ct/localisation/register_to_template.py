@@ -4,6 +4,8 @@ import time
 
 import SimpleITK as sitk
 
+sitk.ProcessObject_GetGlobalDefaultNumberOfThreads()
+
 
 class RegistrationToCTTemplate(object):
     def __init__(self, localisation_dir, target_template_path, num_runs=1, debug_mode=False):
@@ -17,8 +19,7 @@ class RegistrationToCTTemplate(object):
         image = sitk.Threshold(image, lower=-1024.0, upper=1e6, outsideValue=-1024.0)
         dimension = self.target_template.GetDimension()
 
-        # Rigid registration of image to target_template
-
+        # Rigid registration
         # Set the initial moving transforms.
         initial_transform_rig = sitk.CenteredTransformInitializer(self.target_template, image,
                                                                   sitk.Euler3DTransform(),
@@ -64,9 +65,7 @@ class RegistrationToCTTemplate(object):
         iterations_rig = registration_method_rig.GetOptimizerIteration()
         final_metric_value_rig = registration_method_rig.GetMetricValue()
 
-        ########### Affine registration ################
-
-        start_parameters_affine = time.time()
+        # Affine Registration
         registration_method_rig.SetMetricAsMattesMutualInformation(numberOfHistogramBins=32)
         registration_method_rig.SetMetricSamplingStrategy(registration_method_rig.REGULAR)
         registration_method_rig.SetMetricSamplingPercentage(0.2)
@@ -83,20 +82,13 @@ class RegistrationToCTTemplate(object):
         optimized_transform_aff = sitk.AffineTransform(dimension)
         registration_method_rig.SetInitialTransform(optimized_transform_aff, inPlace=True)
 
-        time_elapsed = time.time() - start_parameters_affine
-        passed = time_elapsed
-        print(f'Finished affine parameter took {passed}s')
-
         start_execute_affine = time.time()
         registration_method_rig.Execute(self.target_template, image)
         time_elapsed = time.time() - start_execute_affine
         passed = time_elapsed
         print(f'Finished executing affine took {passed}s')
-        # final_aff_transform = sitk.CompositeTransform([final_rig_transform, optimized_transform_aff])
+        final_aff_transform = sitk.CompositeTransform([final_rig_transform, optimized_transform_aff])
         start_last_affine = time.time()
-        final_aff_transform = sitk.Transform()
-        final_aff_transform.AddTransform(final_rig_transform)
-        final_aff_transform.AddTransform(optimized_transform_aff)
         iterations_aff = registration_method_rig.GetOptimizerIteration()
         final_metric_value_aff = registration_method_rig.GetMetricValue()
 
@@ -113,7 +105,7 @@ class RegistrationToCTTemplate(object):
         passed = time_elapsed
         print(f'Finished executing last affine part took {passed}s')
 
-        return final_aff_transform, iterations_rig, final_metric_value_rig, iterations_aff, final_metric_value_aff,\
+        return final_aff_transform, iterations_rig, final_metric_value_rig, iterations_aff, final_metric_value_aff, \
                image_resampled_aff
 
     def get_best_run(self, final_metric_aff_dict):

@@ -8,7 +8,7 @@ from blast_ct.train import set_device
 from blast_ct.trainer.inference import ModelInference, ModelInferenceEnsemble
 
 
-def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, localisation,
+def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, do_localisation,
                   num_reg_runs, overwrite, native_space):
     if not os.path.exists(job_dir):
         os.makedirs(job_dir)
@@ -21,7 +21,6 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
 
     with open(config_file, 'r') as f:
         config = json.load(f)
-    print('write prob maps: ', write_prob_maps)
     model = get_model(config)
     device = set_device(device)
     use_cuda = device.type != 'cpu'
@@ -29,17 +28,15 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     extra_output_names = config['test']['extra_output_names'] if 'extra_output_names' in config['test'] else None
 
     saver = NiftiPatchSaver(job_dir, test_loader, write_prob_maps=write_prob_maps,
-                            extra_output_names=extra_output_names, do_localisation=localisation,
+                            extra_output_names=extra_output_names, do_localisation=do_localisation,
                             num_reg_runs=num_reg_runs, native_space=native_space)
     saved_model_paths = saved_model_paths.split()
     n_models = len(saved_model_paths)
     task = config['data']['task']
     # Both classes called here are in trainer/inference.py
     if n_models == 1:
-        print('entered model inference nmodel=1')
         ModelInference(job_dir, device, model, saver, saved_model_paths[0], task)(test_loader)
     elif n_models > 1:
-        print('entered model inference nmodel>1')
         ModelInferenceEnsemble(job_dir, device, model, saver, saved_model_paths, task)(test_loader)
 
 
@@ -95,7 +92,7 @@ def inference():
 
     parse_args, unknown = parser.parse_known_args()
 
-    run_inference(install_dir, **parse_args.__dict__)
+    run_inference(**parse_args.__dict__)
 
 
 if __name__ == "__main__":
