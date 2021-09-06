@@ -12,8 +12,10 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/biomedia-mira/blast_ct",
-    packages=['blast_ct', 'blast_ct.models', 'blast_ct.nifti', 'blast_ct.trainer'],
-    package_data={'': ['data/saved_models/*.pt', 'data/config.json', 'README.md']},
+    packages=['blast_ct', 'blast_ct.models', 'blast_ct.nifti', 'blast_ct.trainer', 'blast_ct.localisation'],
+    package_data={'': ['data/saved_models/*.pt', 'data/config.json', 'README.md',
+                       'data/localisation_files/*.nii.gz',
+                       'data/localisation_files/atlas_labels.csv']},
     entry_points={
         'console_scripts': [
             'blast-ct = blast_ct.console_tool:console_tool',
@@ -30,4 +32,6 @@ setuptools.setup(
         'tensorboard'
     ],
     python_requires='>=3.6',
+    setup_requires=['setuptools_scm']
+
 )

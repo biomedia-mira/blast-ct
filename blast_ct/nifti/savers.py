@@ -2,9 +2,12 @@ import os
 import torch
 import numpy as np
 import SimpleITK as sitk
+import time
 from blast_ct.nifti.datasets import FullImageToOverlappingPatchesNiftiDataset
 from blast_ct.nifti.patch_samplers import get_patch_and_padding
 from blast_ct.nifti.rescale import create_reference_reoriented_image
+from blast_ct.localisation.ct_to_template_reg_CP3_rigandaff_usedintheend_tointegrate import RegistrationToCTTemplate
+from blast_ct.localisation.localise_lesion_volumes_CP_to_integrate import LesionVolumeLocalisationMNI
 
 CLASS_NAMES = ['background', 'iph', 'eah', 'oedema', 'ivh']
 
@@ -29,6 +32,7 @@ def save_image(output_array, input_image, path, resolution=None):
     image.SetSpacing(resolution) if resolution is not None else image.SetSpacing(reference.GetSpacing())
     image = sitk.Resample(image, input_image, sitk.Transform(), sitk.sitkNearestNeighbor, 0)
     sitk.WriteImage(image, path)
+    return image
 
 
 def get_num_maps(patches):
@@ -54,11 +58,37 @@ def reconstruct_image(patches, image_shape, center_points, patch_shape):
     return reconstruction
 
 
+def localise(data_index, input_image, prediction_, localisation_dir, image_id, write_registration_info,
+             number_of_runs, native_space, localisation_files):
+    if not os.path.exists(localisation_dir):
+        os.makedirs(localisation_dir)
+    start_reg = time.time()
+    transform, data_index_post_reg = RegistrationToCTTemplate(localisation_dir,
+                                                              localisation_files[0])(data_index,
+                                                                                     write_registration_info,
+                                                                                     number_of_runs, input_image,
+                                                                                     image_id)
+    time_elapsed = time.time() - start_reg
+    passed = time_elapsed
+    print(f'Finished registration took {passed}s')
+    data_index_post_localise = LesionVolumeLocalisationMNI(localisation_dir, native_space,
+                                                           localisation_files[1:4])(transform,
+                                                                                    data_index_post_reg,
+                                                                                    image_id, prediction_,
+                                                                                    write_registration_info)
+
+    return data_index_post_localise
+
+
 class NiftiPatchSaver(object):
-    def __init__(self, job_dir, dataloader, write_prob_maps=True, extra_output_names=None):
+    def __init__(self, job_dir, dataloader, localisation_files, write_prob_maps=True, extra_output_names=None,
+                 localisation=False, number_of_runs=1, native_space=True,
+                 write_registration_info=False):
         assert isinstance(dataloader.dataset, FullImageToOverlappingPatchesNiftiDataset)
 
         self.prediction_dir = os.path.join(job_dir, 'predictions')
+        self.localisation_dir = os.path.join(job_dir, 'localisation')
+        self.localisation_files = localisation_files
         self.dataloader = dataloader
         self.dataset = dataloader.dataset
         self.write_prob_maps = write_prob_maps
@@ -68,6 +98,11 @@ class NiftiPatchSaver(object):
 
         self.image_index = 0
         self.data_index = self.dataset.data_index.copy()
+
+        self.localisation = localisation
+        self.number_of_runs = number_of_runs
+        self.native_space = native_space
+        self.write_registration_info = write_registration_info
 
     def reset(self):
         self.image_index = 0
@@ -84,7 +119,6 @@ class NiftiPatchSaver(object):
             self.extra_output_patches[name] += list(state[name].cpu().detach())
 
     def __call__(self, state):
-
         self.append(state)
         target_shape, center_points = self.dataset.image_mapping[self.image_index]
         target_patch_shape = self.dataset.patch_sampler.target_patch_size
@@ -113,10 +147,15 @@ class NiftiPatchSaver(object):
             for name, array in to_write.items():
                 path = os.path.join(self.prediction_dir, f'{str(id_):s}_{name:s}.nii.gz')
                 self.data_index.loc[self.data_index['id'] == id_, name] = path
-                save_image(array, input_image, path, resolution)
+                saved_image = save_image(array, input_image, path, resolution)
                 if name == 'prediction':
                     resolution_ = resolution if resolution is not None else input_image.GetSpacing()
                     self.data_index = add_predicted_volumes_to_dataframe(self.data_index, id_, array, resolution_)
+                    if self.localisation:
+                        self.data_index = localise(self.data_index, input_image, saved_image, self.localisation_dir,
+                                                   id_, self.write_registration_info,
+                                                   self.number_of_runs, self.native_space, self.localisation_files)
+
             self.image_index += 1
             message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Saved prediction for {str(id_)}."
             if self.image_index >= len(self.dataset.image_mapping):
