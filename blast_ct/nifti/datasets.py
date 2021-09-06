@@ -1,15 +1,17 @@
 import itertools
-import pandas as pd
-import torch
-import SimpleITK as sitk
-import numpy as np
 import math
 import random
+
+import SimpleITK as sitk
+import numpy as np
+import pandas as pd
+import torch
 import torch.utils.data as data
-from blast_ct.nifti.patch_samplers import PatchSampler
-from blast_ct.nifti.transformation import Transformation
+
 from blast_ct.nifti.augmention import RandomAugmentation
+from blast_ct.nifti.patch_samplers import PatchSampler
 from blast_ct.nifti.rescale import rescale, reorient_image
+from blast_ct.nifti.transformation import Transformation
 
 
 # numpy.random state is discarded at the end of a worker process and does not propagate between workers or to the

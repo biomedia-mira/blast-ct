@@ -1,22 +1,17 @@
-import SimpleITK as sitk
-import pandas as pd
-from tqdm import tqdm
-import argparse
-import os
-import re
 import operator
+import os
 import time
+
+import SimpleITK as sitk
 
 
 class RegistrationToCTTemplate(object):
-    def __init__(self, localisation_dir, target_template_path):
-        start_read1 = time.time()
+    def __init__(self, localisation_dir, target_template_path, num_runs=1, debug_mode=False):
         self.target_template_path = target_template_path
         self.target_template = sitk.ReadImage(self.target_template_path)
-        time_elapsed = time.time() - start_read1
-        passed = time_elapsed
-        print(f'Finished reading 1st image took {passed}s')
         self.localisation_dir = localisation_dir
+        self.num_runs = num_runs
+        self.debug_mode = debug_mode
 
     def register_image_to_atlas(self, image):
         image = sitk.Threshold(image, lower=-1024.0, upper=1e6, outsideValue=-1024.0)
@@ -118,20 +113,21 @@ class RegistrationToCTTemplate(object):
         passed = time_elapsed
         print(f'Finished executing last affine part took {passed}s')
 
-        return final_aff_transform, iterations_rig, final_metric_value_rig, iterations_aff, final_metric_value_aff, image_resampled_aff
+        return final_aff_transform, iterations_rig, final_metric_value_rig, iterations_aff, final_metric_value_aff,\
+               image_resampled_aff
 
-    @staticmethod
-    def best_run(final_metric_aff_dict, no_runs):
+    def get_best_run(self, final_metric_aff_dict):
         sm_values = {}
-        for iteration in range(0, no_runs):
+        for iteration in range(0, self.num_runs):
             sm_values[iteration] = final_metric_aff_dict.get(iteration, {}).get('final_metric_aff')
         best_iter = min(sm_values.items(), key=operator.itemgetter(1))[0]
-        transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = final_metric_aff_dict[best_iter].values()
+        transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = \
+            final_metric_aff_dict[best_iter].values()
         return transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff
 
-    def __call__(self, data_index, write_reg_param, no_runs, image, image_id):
+    def __call__(self, data_index, image, image_id):
         final_metric_aff_dict = {}
-        for iteration in range(0, no_runs):
+        for iteration in range(0, self.num_runs):
             try:
                 transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = \
                     self.register_image_to_atlas(image)
@@ -145,9 +141,10 @@ class RegistrationToCTTemplate(object):
                 print(f'Could not register image: {image_id:s}.')
                 continue
 
-        transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = self.best_run(
-            final_metric_aff_dict, no_runs)
-        if write_reg_param:
+        transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff \
+            = self.get_best_run(final_metric_aff_dict)
+
+        if self.debug_mode:
             resampled_image_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_resampled.nii.gz')
             sitk.WriteImage(image_resampled_aff, resampled_image_path)
             print('wrote resampled image')

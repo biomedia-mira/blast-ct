@@ -1,13 +1,15 @@
-import sys
+import argparse
 import json
 import os
-import argparse
-import pandas as pd
 import shutil
-from blast_ct.trainer.inference import ModelInference, ModelInferenceEnsemble
-from blast_ct.train import set_device
-from blast_ct.read_config import get_model, get_test_loader
+import sys
+
+import pandas as pd
+
 from blast_ct.nifti.savers import NiftiPatchSaver
+from blast_ct.read_config import get_model, get_test_loader
+from blast_ct.train import set_device
+from blast_ct.trainer.inference import ModelInference, ModelInferenceEnsemble
 
 
 def path(string):
@@ -24,7 +26,8 @@ def console_tool():
     parser.add_argument('--ensemble', help='Whether to use the ensemble (slower but more precise)', action='store_true',
                         default=False)
     parser.add_argument('--device', help='GPU device index (int) or \'cpu\' (str)', default='cpu')
-    parser.add_argument('--localisation', default=False, action='store_true', help='Whether to run localisation or not')
+    parser.add_argument('--do-localisation', default=False, action='store_true',
+                        help='Whether to run localisation or not')
 
     parse_args, unknown = parser.parse_known_args()
     if not (parse_args.input[-7:] == '.nii.gz' or parse_args.input[-4:] == '.nii'):
@@ -47,16 +50,7 @@ def console_tool():
 
     model = get_model(config)
     test_loader = get_test_loader(config, model, test_csv_path, use_cuda=not device.type == 'cpu')
-
-    write_registration_info = False
-    number_of_runs = 1
-    native_space = True
-    localisation_files_list = ['ct_template.nii.gz', 'atlas_template_space.nii.gz',
-                               'ct_template_mask.nii.gz', 'atlas_labels.csv']
-    localisation_files = [os.path.join(install_dir, f'data/localisation_files/{i}') for i in localisation_files_list]
-    saver = NiftiPatchSaver(job_dir, test_loader, localisation_files, write_prob_maps=False,
-                            localisation=parse_args.localisation, number_of_runs=number_of_runs,
-                            native_space=native_space, write_registration_info=write_registration_info)
+    saver = NiftiPatchSaver(job_dir, test_loader, write_prob_maps=False, do_localisation=parse_args.do_localisation)
 
     if not parse_args.ensemble:
         model_path = os.path.join(install_dir, 'data/saved_models/model_1.pt')
