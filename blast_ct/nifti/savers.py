@@ -1,5 +1,4 @@
 import os
-import time
 
 import SimpleITK as sitk
 import numpy as np
@@ -78,11 +77,7 @@ class Localisation(object):
                                                     brain_mask_path, roi_dictionary_csv, 'prediction')
 
     def __call__(self, data_index, image_id, input_image, prediction):
-        start_reg = time.time()
         transform, data_index = self.register(data_index, input_image, image_id)
-        time_elapsed = time.time() - start_reg
-        passed = time_elapsed
-        print(f'Finished registration took {passed}s')
         return self.localise(transform, data_index, image_id, prediction)
 
 
@@ -149,7 +144,7 @@ class NiftiPatchSaver(object):
                 if name == 'prediction':
                     resolution_ = resolution if resolution is not None else input_image.GetSpacing()
                     self.data_index = add_predicted_volumes_to_dataframe(self.data_index, image_id, array, resolution_)
-                    if self.localisation:
+                    if self.localisation is not None:
                         self.data_index = self.localisation(self.data_index, image_id, input_image, output_image)
 
             self.image_index += 1

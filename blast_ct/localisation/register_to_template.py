@@ -1,6 +1,5 @@
 import operator
 import os
-import time
 
 import SimpleITK as sitk
 
@@ -49,19 +48,14 @@ class RegistrationToCTTemplate(object):
         registration_method_rig.SetOptimizerScalesFromPhysicalShift()
 
         # Setup for the multi-resolution framework:
-        registration_method_rig.SetShrinkFactorsPerLevel(shrinkFactors=[4, 2, 1])
-        registration_method_rig.SetSmoothingSigmasPerLevel(smoothingSigmas=[4, 2, 1])
+        registration_method_rig.SetShrinkFactorsPerLevel(shrinkFactors=[4, 2])
+        registration_method_rig.SetSmoothingSigmasPerLevel(smoothingSigmas=[4, 2])
         registration_method_rig.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()  # mm
 
         # Set the initial transform
 
         registration_method_rig.SetInitialTransform(initial_transform_rig)
-
-        start_execute_rigid = time.time()
         final_rig_transform = registration_method_rig.Execute(self.target_template, image)
-        time_elapsed = time.time() - start_execute_rigid
-        passed = time_elapsed
-        print(f'Finished executing rigid parameter took {passed}s')
         iterations_rig = registration_method_rig.GetOptimizerIteration()
         final_metric_value_rig = registration_method_rig.GetMetricValue()
 
@@ -75,20 +69,15 @@ class RegistrationToCTTemplate(object):
                                                                         convergenceMinimumValue=1e-6,
                                                                         convergenceWindowSize=5)
         registration_method_rig.SetOptimizerScalesFromPhysicalShift()
-        registration_method_rig.SetShrinkFactorsPerLevel(shrinkFactors=[4, 2, 1])
-        registration_method_rig.SetSmoothingSigmasPerLevel(smoothingSigmas=[4, 2, 1])
+        registration_method_rig.SetShrinkFactorsPerLevel(shrinkFactors=[4, 2])
+        registration_method_rig.SetSmoothingSigmasPerLevel(smoothingSigmas=[4, 2])
         registration_method_rig.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()  # mm
         registration_method_rig.SetMovingInitialTransform(final_rig_transform)
         optimized_transform_aff = sitk.AffineTransform(dimension)
         registration_method_rig.SetInitialTransform(optimized_transform_aff, inPlace=True)
 
-        start_execute_affine = time.time()
         registration_method_rig.Execute(self.target_template, image)
-        time_elapsed = time.time() - start_execute_affine
-        passed = time_elapsed
-        print(f'Finished executing affine took {passed}s')
         final_aff_transform = sitk.CompositeTransform([final_rig_transform, optimized_transform_aff])
-        start_last_affine = time.time()
         iterations_aff = registration_method_rig.GetOptimizerIteration()
         final_metric_value_aff = registration_method_rig.GetMetricValue()
 
@@ -101,9 +90,6 @@ class RegistrationToCTTemplate(object):
         resampler.SetDefaultPixelValue(min_filter.GetMinimum())
         resampler.SetTransform(final_aff_transform)
         image_resampled_aff = resampler.Execute(image)
-        time_elapsed = time.time() - start_last_affine
-        passed = time_elapsed
-        print(f'Finished executing last affine part took {passed}s')
 
         return final_aff_transform, iterations_rig, final_metric_value_rig, iterations_aff, final_metric_value_aff, \
                image_resampled_aff
@@ -123,7 +109,6 @@ class RegistrationToCTTemplate(object):
             try:
                 transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff = \
                     self.register_image_to_atlas(image)
-                print(f'{image_id:s} image registered.')
                 final_metric_aff_dict[iteration] = {'transform': transform, 'iterations_rig': iterations_rig,
                                                     'final_metric_rig': final_metric_rig,
                                                     'iterations_aff': iterations_aff,
@@ -139,8 +124,6 @@ class RegistrationToCTTemplate(object):
         if self.debug_mode:
             resampled_image_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_resampled.nii.gz')
             sitk.WriteImage(image_resampled_aff, resampled_image_path)
-            print('wrote resampled image')
-            print(self.localisation_dir)
             transform_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_transform.tfm')
             sitk.WriteTransform(transform, transform_path)
 

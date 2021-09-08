@@ -1,6 +1,6 @@
-scipy==1.4.1
-numpy==1.18.2
-pandas==1.0.3
-SimpleITK==1.2.4
-torch==1.4.0
+scipy
+numpy
+pandas
+SimpleITK>=2.0.0
+torch>=1.9
 tensorboard

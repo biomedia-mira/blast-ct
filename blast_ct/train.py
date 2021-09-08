@@ -109,3 +109,7 @@ def train():
     parse_args, unknown = parser.parse_known_args()
 
     run_ensemble(**parse_args.__dict__)
+
+
+if __name__ == "__main__":
+    train()
