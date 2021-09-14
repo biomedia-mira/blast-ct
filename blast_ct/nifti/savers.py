@@ -78,7 +78,9 @@ class Localisation(object):
 
     def __call__(self, data_index, image_id, input_image, prediction):
         transform, data_index = self.register(data_index, input_image, image_id)
-        return self.localise(transform, data_index, image_id, prediction)
+        if transform is not None:
+            return self.localise(transform, data_index, image_id, prediction)
+        return data_index
 
 
 class NiftiPatchSaver(object):

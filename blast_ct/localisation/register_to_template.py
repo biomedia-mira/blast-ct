@@ -122,7 +122,7 @@ class RegistrationToCTTemplate(object):
                                                     'image_resampled_aff': image_resampled_aff}
             except RuntimeError:
                 print(f'Could not register image: {image_id:s}.')
-                continue
+                return None, data_index
 
         transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff \
             = self.get_best_run(final_metric_aff_dict)
