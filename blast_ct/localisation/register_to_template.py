@@ -15,7 +15,7 @@ class RegistrationToCTTemplate(object):
         self.debug_mode = debug_mode
 
     def register_image_to_atlas(self, image):
-        image = sitk.Threshold(image, lower=-1024.0, upper=1e6, outsideValue=-1024.0)
+        image = sitk.Cast(sitk.Threshold(image, lower=-1024.0, upper=1e6, outsideValue=-1024.0), sitk.sitkFloat32)
         dimension = self.target_template.GetDimension()
 
         # Rigid registration
