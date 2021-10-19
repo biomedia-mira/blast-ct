@@ -27,7 +27,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     test_loader = get_test_loader(config, model, test_csv_path, use_cuda)
     extra_output_names = config['test']['extra_output_names'] if 'extra_output_names' in config['test'] else None
 
-    saver = NiftiPatchSaver(job_dir, test_loader, write_prob_maps=write_prob_maps,
+    saver = NiftiPatchSaver(job_dir, test_loader, image_index, write_prob_maps=write_prob_maps,
                             extra_output_names=extra_output_names, do_localisation=do_localisation,
                             num_reg_runs=num_reg_runs, native_space=native_space)
     saved_model_paths = saved_model_paths.split()
@@ -89,6 +89,10 @@ def inference():
                         default=True,
                         type=bool,
                         help='Whether to calculate the volumes in native space or atlas space.')
+    parser.add_argument('--image-index',
+                        default=0,
+                        type=int,
+                        help='How many times to run registration between native scan and CT template.')
 
     parse_args, unknown = parser.parse_known_args()
 

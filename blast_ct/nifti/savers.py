@@ -84,7 +84,7 @@ class Localisation(object):
 
 
 class NiftiPatchSaver(object):
-    def __init__(self, job_dir, dataloader, write_prob_maps=True, extra_output_names=None, do_localisation=False,
+    def __init__(self, job_dir, dataloader, image_index, write_prob_maps=True, extra_output_names=None, do_localisation=False,
                  num_reg_runs=1, native_space=True):
         assert isinstance(dataloader.dataset, FullImageToOverlappingPatchesNiftiDataset)
 
@@ -94,7 +94,7 @@ class NiftiPatchSaver(object):
         self.write_prob_maps = write_prob_maps
         self.patches = []
         self.extra_output_patches = {key: [] for key in extra_output_names} if extra_output_names is not None else {}
-        self.image_index = 0
+        self.image_index = image_index
         self.data_index = self.dataset.data_index.copy()
         localisation_dir = os.path.join(job_dir, 'localisation')
         self.localisation = Localisation(localisation_dir, num_reg_runs, native_space) if do_localisation else None
@@ -151,7 +151,10 @@ class NiftiPatchSaver(object):
 
             self.image_index += 1
             message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Saved prediction for {str(image_id)}."
-            if self.image_index >= len(self.dataset.image_mapping):
+            if self.image_index < len(self.dataset.image_mapping):
+                self.data_index.to_csv(os.path.join(self.prediction_dir, 'prediction.csv'), index=False)
+
+            elif self.image_index >= len(self.dataset.image_mapping):
                 self.data_index.to_csv(os.path.join(self.prediction_dir, 'prediction.csv'), index=False)
                 self.reset()
 
