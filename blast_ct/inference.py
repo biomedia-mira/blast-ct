@@ -9,7 +9,7 @@ from blast_ct.trainer.inference import ModelInference, ModelInferenceEnsemble
 
 
 def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, do_localisation,
-                  num_reg_runs, overwrite, native_space):
+                  num_reg_runs, overwrite, native_space, image_index):
     if not os.path.exists(job_dir):
         os.makedirs(job_dir)
     else:
