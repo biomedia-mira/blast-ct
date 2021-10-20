@@ -34,6 +34,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     n_models = len(saved_model_paths)
     task = config['data']['task']
     # Both classes called here are in trainer/inference.py
+    print('saver: ', saver)
     if n_models == 1:
         ModelInference(job_dir, device, model, saver, saved_model_paths[0], task)(test_loader)
     elif n_models > 1:

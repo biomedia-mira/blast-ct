@@ -151,11 +151,9 @@ class NiftiPatchSaver(object):
 
             self.image_index += 1
             message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Saved prediction for {str(image_id)}."
-            if self.image_index < len(self.dataset.image_mapping):
-                self.data_index.to_csv(os.path.join(self.prediction_dir, 'prediction.csv'), index=False)
+            self.data_index.to_csv(os.path.join(self.prediction_dir, 'prediction.csv'), index=False)
 
-            elif self.image_index >= len(self.dataset.image_mapping):
-                self.data_index.to_csv(os.path.join(self.prediction_dir, 'prediction.csv'), index=False)
+            if self.image_index >= len(self.dataset.image_mapping):
                 self.reset()
 
             return message
