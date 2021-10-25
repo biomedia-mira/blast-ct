@@ -84,7 +84,7 @@ class Localisation(object):
 
 
 class NiftiPatchSaver(object):
-    def __init__(self, job_dir, dataloader, image_index, write_prob_maps=True, extra_output_names=None, do_localisation=False,
+    def __init__(self, job_dir, dataloader, write_prob_maps=True, extra_output_names=None, do_localisation=False,
                  num_reg_runs=1, native_space=True):
         assert isinstance(dataloader.dataset, FullImageToOverlappingPatchesNiftiDataset)
 
@@ -94,10 +94,11 @@ class NiftiPatchSaver(object):
         self.write_prob_maps = write_prob_maps
         self.patches = []
         self.extra_output_patches = {key: [] for key in extra_output_names} if extra_output_names is not None else {}
-        self.image_index = image_index
+        self.image_index = 0
         self.data_index = self.dataset.data_index.copy()
         localisation_dir = os.path.join(job_dir, 'localisation')
         self.localisation = Localisation(localisation_dir, num_reg_runs, native_space) if do_localisation else None
+        self.prediction_csv_path = os.path.join(self.prediction_dir, 'prediction.csv')
 
     def reset(self):
         self.image_index = 0
@@ -142,17 +143,29 @@ class NiftiPatchSaver(object):
             for name, array in to_write.items():
                 path = os.path.join(self.prediction_dir, f'{str(image_id):s}_{name:s}.nii.gz')
                 self.data_index.loc[self.data_index['id'] == image_id, name] = path
-                output_image = save_image(array, input_image, path, resolution)
-                if name == 'prediction':
-                    resolution_ = resolution if resolution is not None else input_image.GetSpacing()
-                    self.data_index = add_predicted_volumes_to_dataframe(self.data_index, image_id, array, resolution_)
-                    if self.localisation is not None:
-                        self.data_index = self.localisation(self.data_index, image_id, input_image, output_image)
+                try:
+                    output_image = save_image(array, input_image, path, resolution)
+                    if name == 'prediction':
+                        resolution_ = resolution if resolution is not None else input_image.GetSpacing()
+                        self.data_index = add_predicted_volumes_to_dataframe(self.data_index, image_id, array,
+                                                                             resolution_)
+                        if self.localisation is not None:
+                            self.data_index = self.localisation(self.data_index, image_id, input_image, output_image)
+                    message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Saved prediction for {str(image_id)}."
+                except:
+                    message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Error saving prediction for {str(image_id)}."
+                    continue
+
+            if os.path.exists(self.prediction_csv_path):
+                prediction_csv = pd.read_csv(self.prediction_csv_path)
+                prediction_csv.set_index('id', inplace=True)
+                prediction_csv.loc[image_id] = data_index.loc[self.image_index]
+                self.prediction_csv.to_csv(self.prediction_csv_path, index=True, index_label='id')
+
+            else:
+                self.data_index.to_csv(self.prediction_csv_path, index=False)
 
             self.image_index += 1
-            message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Saved prediction for {str(image_id)}."
-            self.data_index.to_csv(os.path.join(self.prediction_dir, 'prediction.csv'), index=False)
-
             if self.image_index >= len(self.dataset.image_mapping):
                 self.reset()
 

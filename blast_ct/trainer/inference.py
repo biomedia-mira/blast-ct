@@ -30,6 +30,8 @@ class ModelInference(object):
         self.model.to(self.device)
 
         for model_state in self.inference(dataloader):
+            # Só aqui é que corre o savers.py
+            # O que é o model_state?
             message = self.saver(model_state)
             if message is not None:
                 self.logger.info(message)

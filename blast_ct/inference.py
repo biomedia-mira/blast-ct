@@ -1,23 +1,40 @@
 import argparse
 import json
 import os
+import numpy as np
 
 from blast_ct.nifti.savers import NiftiPatchSaver
 from blast_ct.read_config import get_model, get_test_loader
 from blast_ct.train import set_device
 from blast_ct.trainer.inference import ModelInference, ModelInferenceEnsemble
 
+def new_dataset(test_csv_path, previous_prediction_csv_path):
+    test_csv = pd.read_csv(test_csv_path)
+    previous_prediction_csv = pd.read_csv(previous_prediction_csv_path)
+    # Selecting rows of previous prediction which haven't been run over program
+    previous_prediction_csv = previous_prediction_csv[np.isnan(previous_prediction_csv.Brain_volume_ml) == False]
+    # Select rows from test csv that have not been run over program
+    dataframe_yet_to_run = test_csv[~test_csv.id.isin(previous_prediction_csv.id.values)]
+
+    test_csv_path = '/tmp/dataframe_yet_to_run.csv'
+    dataframe_yet_to_run.to_csv(test_csv_path, index = False)
+
 
 def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, do_localisation,
-                  num_reg_runs, overwrite, native_space, image_index):
+                  num_reg_runs, overwrite, native_space):
+
+    previous_prediction_csv_path = os.path.join(os.path.join(job_dir, 'predictions'), 'prediction.csv')
     if not os.path.exists(job_dir):
         os.makedirs(job_dir)
     else:
         if overwrite:
+            os.remove(job_dir)
+            os.makedirs(job_dir)
             print('Run already exists, overwriting...')
-        else:
-            print('Run already exists, not overwriting...')
-            return
+        elif not overwrite and os.path.exists(incomplete_csv_path):
+            print('Run already exists, completing run...')
+            test_csv_path = new_dataset(test_csv_path, previous_prediction_csv_path)
+
 
     with open(config_file, 'r') as f:
         config = json.load(f)
@@ -27,7 +44,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     test_loader = get_test_loader(config, model, test_csv_path, use_cuda)
     extra_output_names = config['test']['extra_output_names'] if 'extra_output_names' in config['test'] else None
 
-    saver = NiftiPatchSaver(job_dir, test_loader, image_index, write_prob_maps=write_prob_maps,
+    saver = NiftiPatchSaver(job_dir, test_loader, write_prob_maps=write_prob_maps,
                             extra_output_names=extra_output_names, do_localisation=do_localisation,
                             num_reg_runs=num_reg_runs, native_space=native_space)
     saved_model_paths = saved_model_paths.split()
@@ -82,18 +99,13 @@ def inference():
                         default=1,
                         type=int,
                         help='How many times to run registration between native scan and CT template.')
-    parser.add_argument('--overwrite',
-                        default=False,
-                        action='store_true',
-                        help='Whether to overwrite run if already exists')
+    parser.add_argument('--overwrite', dest='overwrite', action='store_true', help='Whether to overwrite run if already exists')
+    parser.add_argument('--not-overwrite', dest='overwrite', action='store_false')
+    parser.set_defaults(overwrite=False)
     parser.add_argument('--native-space',
                         default=True,
                         type=bool,
                         help='Whether to calculate the volumes in native space or atlas space.')
-    parser.add_argument('--image-index',
-                        default=0,
-                        type=int,
-                        help='How many times to run registration between native scan and CT template.')
 
     parse_args, unknown = parser.parse_known_args()
 
