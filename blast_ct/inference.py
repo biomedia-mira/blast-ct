@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import numpy as np
+import pandas as pd
 
 from blast_ct.nifti.savers import NiftiPatchSaver
 from blast_ct.read_config import get_model, get_test_loader
