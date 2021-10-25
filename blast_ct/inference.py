@@ -12,7 +12,7 @@ def new_dataset(test_csv_path, previous_prediction_csv_path):
     test_csv = pd.read_csv(test_csv_path)
     previous_prediction_csv = pd.read_csv(previous_prediction_csv_path)
     # Selecting rows of previous prediction which haven't been run over program
-    previous_prediction_csv = previous_prediction_csv[pd.isnull(previous_prediction_csv['Brain_volume_ml']) == False]
+    previous_prediction_csv = previous_prediction_csv[pd.isnull(previous_prediction_csv['iph_predicted_volume_ml']) == False]
     # Select rows from test csv that have not been run over program
     dataframe_yet_to_run = test_csv[~test_csv.id.isin(previous_prediction_csv.id.values)]
 
@@ -20,7 +20,7 @@ def new_dataset(test_csv_path, previous_prediction_csv_path):
     dataframe_yet_to_run.to_csv(test_csv_path, index = False)
 
 
-def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, do_localisation,
+def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, localisation,
                   num_reg_runs, overwrite, native_space):
 
     previous_prediction_csv_path = os.path.join(os.path.join(job_dir, 'predictions'), 'prediction.csv')
@@ -45,7 +45,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     extra_output_names = config['test']['extra_output_names'] if 'extra_output_names' in config['test'] else None
 
     saver = NiftiPatchSaver(job_dir, test_loader, write_prob_maps=write_prob_maps,
-                            extra_output_names=extra_output_names, do_localisation=do_localisation,
+                            extra_output_names=extra_output_names, do_localisation=localisation,
                             num_reg_runs=num_reg_runs, native_space=native_space)
     saved_model_paths = saved_model_paths.split()
     n_models = len(saved_model_paths)
@@ -92,9 +92,14 @@ def inference():
                         action='store_true',
                         help='Whether to write probability maps images to disk')
     parser.add_argument('--do-localisation',
-                        default=False,
+                        dest='localisation',
                         action='store_true',
-                        help='Whether to run localisation or not')
+                        help='Whether to overwrite run if already exists')
+    parser.add_argument('--not-localisation',
+                        dest='localisation',
+                        action='store_false')
+    parser.set_defaults(localisation=False)
+
     parser.add_argument('--num-reg-runs',
                         default=1,
                         type=int,
