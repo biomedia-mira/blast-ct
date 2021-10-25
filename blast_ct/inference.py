@@ -1,7 +1,6 @@
 import argparse
 import json
 import os
-import numpy as np
 import pandas as pd
 
 from blast_ct.nifti.savers import NiftiPatchSaver
@@ -13,7 +12,7 @@ def new_dataset(test_csv_path, previous_prediction_csv_path):
     test_csv = pd.read_csv(test_csv_path)
     previous_prediction_csv = pd.read_csv(previous_prediction_csv_path)
     # Selecting rows of previous prediction which haven't been run over program
-    previous_prediction_csv = previous_prediction_csv[np.isnan(previous_prediction_csv.Brain_volume_ml) == False]
+    previous_prediction_csv = previous_prediction_csv[pd.isnull(previous_prediction_csv['Brain_volume_ml']) == False]
     # Select rows from test csv that have not been run over program
     dataframe_yet_to_run = test_csv[~test_csv.id.isin(previous_prediction_csv.id.values)]
 
