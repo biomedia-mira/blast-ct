@@ -31,7 +31,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
             os.remove(job_dir)
             os.makedirs(job_dir)
             print('Run already exists, overwriting...')
-        elif not overwrite and os.path.exists(incomplete_csv_path):
+        elif not overwrite and os.path.exists(previous_prediction_csv_path):
             print('Run already exists, completing run...')
             test_csv_path = new_dataset(test_csv_path, previous_prediction_csv_path)
 
@@ -99,8 +99,13 @@ def inference():
                         default=1,
                         type=int,
                         help='How many times to run registration between native scan and CT template.')
-    parser.add_argument('--overwrite', dest='overwrite', action='store_true', help='Whether to overwrite run if already exists')
-    parser.add_argument('--not-overwrite', dest='overwrite', action='store_false')
+    parser.add_argument('--overwrite',
+                        dest='overwrite',
+                        action='store_true',
+                        help='Whether to overwrite run if already exists')
+    parser.add_argument('--not-overwrite',
+                        dest='overwrite',
+                        action='store_false')
     parser.set_defaults(overwrite=False)
     parser.add_argument('--native-space',
                         default=True,
