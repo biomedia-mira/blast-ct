@@ -19,6 +19,7 @@ def new_dataset(test_csv_path, previous_prediction_csv_path):
 
     test_csv_path = '/tmp/dataframe_yet_to_run.csv'
     dataframe_yet_to_run.to_csv(test_csv_path, index = False)
+    return test_csv_path
 
 
 def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, localisation,
