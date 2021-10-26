@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import pandas as pd
+import shutil
 
 from blast_ct.nifti.savers import NiftiPatchSaver
 from blast_ct.read_config import get_model, get_test_loader
@@ -28,7 +29,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
         os.makedirs(job_dir)
     else:
         if overwrite:
-            os.rmdir(job_dir)
+            shutil.rmtree(job_dir)
             os.makedirs(job_dir)
             print('Run already exists, overwriting...')
         elif not overwrite and os.path.exists(previous_prediction_csv_path):
