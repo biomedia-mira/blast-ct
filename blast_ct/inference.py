@@ -28,7 +28,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
         os.makedirs(job_dir)
     else:
         if overwrite:
-            os.remove(job_dir)
+            os.rmdir(job_dir)
             os.makedirs(job_dir)
             print('Run already exists, overwriting...')
         elif not overwrite and os.path.exists(previous_prediction_csv_path):
