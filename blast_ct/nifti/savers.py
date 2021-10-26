@@ -159,7 +159,7 @@ class NiftiPatchSaver(object):
             if os.path.exists(self.prediction_csv_path):
                 prediction_csv = pd.read_csv(self.prediction_csv_path)
                 prediction_csv.set_index('id', inplace=True)
-                prediction_csv.loc[image_id] = data_index.loc[self.image_index]
+                prediction_csv.loc[image_id] = self.data_index.loc[self.image_index]
                 self.prediction_csv.to_csv(self.prediction_csv_path, index=True, index_label='id')
 
             else:
