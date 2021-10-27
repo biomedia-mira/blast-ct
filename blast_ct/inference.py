@@ -13,7 +13,7 @@ def new_dataset(test_csv_path, previous_prediction_csv_path):
     test_csv = pd.read_csv(test_csv_path)
     previous_prediction_csv = pd.read_csv(previous_prediction_csv_path)
     # Selecting rows of previous prediction which haven't been run over program
-    dataframe_yet_to_run = previous_prediction_csv[previous_prediction_csv[:, -1].isnull()]
+    dataframe_yet_to_run = previous_prediction_csv[previous_prediction_csv.iloc[:, -1].isnull()]
     # Select rows from test csv that have not been run over program
     #dataframe_yet_to_run = test_csv[~test_csv.id.isin(previous_prediction_csv.id.values)]
 
