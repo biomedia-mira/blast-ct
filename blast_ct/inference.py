@@ -89,15 +89,21 @@ def inference():
                         default=default_model_paths,
                         type=str,
                         help='Path to saved model or list of paths separated by spaces.')
+
     parser.add_argument('--write-prob-maps',
-                        default=False,
+                        dest='write-prob-maps',
                         action='store_true',
                         help='Whether to write probability maps images to disk')
+    parser.add_argument('--not-write-prob-maps',
+                        dest='write-prob-maps',
+                        action='store_false')
+    parser.set_defaults(write_prob_maps=False)
+
     parser.add_argument('--do-localisation',
                         dest='localisation',
                         action='store_true',
                         help='Whether to overwrite run if already exists')
-    parser.add_argument('--not-localisation',
+    parser.add_argument('--not-do-localisation',
                         dest='localisation',
                         action='store_false')
     parser.set_defaults(localisation=False)
@@ -106,6 +112,7 @@ def inference():
                         default=1,
                         type=int,
                         help='How many times to run registration between native scan and CT template.')
+
     parser.add_argument('--overwrite',
                         dest='overwrite',
                         action='store_true',
@@ -114,10 +121,19 @@ def inference():
                         dest='overwrite',
                         action='store_false')
     parser.set_defaults(overwrite=False)
+
     parser.add_argument('--native-space',
                         default=True,
                         type=bool,
                         help='Whether to calculate the volumes in native space or atlas space.')
+    parser.add_argument('--native-space',
+                        dest='native-space',
+                        action='store_true',
+                        help='Whether to calculate the volumes in native space or atlas space.')
+    parser.add_argument('--atlas-space',
+                        dest='native-space',
+                        action='store_false')
+    parser.set_defaults(native_space=False)
 
     parse_args, unknown = parser.parse_known_args()
 
