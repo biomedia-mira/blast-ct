@@ -106,11 +106,13 @@ def inference():
 
     parser.add_argument('--write-prob-maps',
                         type=str2bool, nargs='?',
+                        const=True,
                         default=False,
                         help='Whether to write probability maps images to disk')
 
     parser.add_argument('--do-localisation',
                         type=str2bool, nargs='?',
+                        const=True,
                         default=False,
                         help='Whether to run localisation or not')
 
@@ -127,6 +129,7 @@ def inference():
 
     parser.add_argument('--native-space',
                         type=str2bool, nargs='?',
+                        const=True,
                         default=True,
                         help='Whether to calculate the volumes in native space or atlas space.')
 
