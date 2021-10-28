@@ -37,6 +37,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     previous_prediction_csv_path = os.path.join(os.path.join(job_dir, 'predictions'), 'prediction.csv')
     if not os.path.exists(job_dir):
         os.makedirs(job_dir)
+        print('No previous run, creating new job directory...')
     else:
         if overwrite:
             shutil.rmtree(job_dir)
