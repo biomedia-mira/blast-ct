@@ -120,6 +120,7 @@ def inference():
 
     parser.add_argument('--overwrite',
                         type=str2bool, nargs='?',
+                        const=True,
                         default=False,
                         help='Whether to overwrite run if already exists')
 
