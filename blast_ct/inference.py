@@ -31,7 +31,7 @@ def new_dataset(test_csv_path, previous_prediction_csv_path):
     dataframe_yet_to_run.to_csv(test_csv_path, index = False)
     return test_csv_path
 
-def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, localisation,
+def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, do_localisation,
                   num_reg_runs, overwrite, native_space):
 
     previous_prediction_csv_path = os.path.join(os.path.join(job_dir, 'predictions'), 'prediction.csv')
@@ -56,7 +56,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     extra_output_names = config['test']['extra_output_names'] if 'extra_output_names' in config['test'] else None
 
     saver = NiftiPatchSaver(job_dir, test_loader, write_prob_maps=write_prob_maps,
-                            extra_output_names=extra_output_names, do_localisation=localisation,
+                            extra_output_names=extra_output_names, do_localisation=do_localisation,
                             num_reg_runs=num_reg_runs, native_space=native_space)
     saved_model_paths = saved_model_paths.split()
     n_models = len(saved_model_paths)
