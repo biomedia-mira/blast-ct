@@ -23,14 +23,14 @@ def add_predicted_volumes_to_dataframe(dataframe, id_, array, resolution):
     return dataframe
 
 
-def save_image(output_array, input_image, path, resolution=None):
+def save_image(output_array, input_image, path, resolution):
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
     image = sitk.GetImageFromArray(output_array)
     reference = create_reference_reoriented_image(input_image)
     image.SetOrigin(reference.GetOrigin())
     image.SetDirection(reference.GetDirection())
-    image.SetSpacing(resolution) if resolution is not None else image.SetSpacing(reference.GetSpacing())
+    image.SetSpacing(resolution)
     image = sitk.Resample(image, input_image, sitk.Transform(), sitk.sitkNearestNeighbor, 0)
     sitk.WriteImage(image, path)
     return image
@@ -139,16 +139,16 @@ class NiftiPatchSaver(object):
                 self.extra_output_patches[name] = self.extra_output_patches[name][patches_in_image:]
                 images = reconstruct_image(patches, target_shape, center_points, target_patch_shape)
                 to_write[name] = images
-            resolution = self.dataset.resolution
+            resolution = self.dataset.resolution if self.dataset.resolution is not None else input_image.GetSpacing()
+
             for name, array in to_write.items():
                 path = os.path.join(self.prediction_dir, f'{str(image_id):s}_{name:s}.nii.gz')
                 self.data_index.loc[self.data_index['id'] == image_id, name] = path
                 try:
                     output_image = save_image(array, input_image, path, resolution)
                     if name == 'prediction':
-                        resolution_ = resolution if resolution is not None else input_image.GetSpacing()
                         self.data_index = add_predicted_volumes_to_dataframe(self.data_index, image_id, array,
-                                                                             resolution_)
+                                                                             resolution)
                         if self.localisation is not None:
                             self.data_index = self.localisation(self.data_index, image_id, input_image, output_image)
                     message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Saved prediction for {str(image_id)}."
