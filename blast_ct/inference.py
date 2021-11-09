@@ -9,6 +9,7 @@ from blast_ct.read_config import get_model, get_test_loader
 from blast_ct.train import set_device
 from blast_ct.trainer.inference import ModelInference, ModelInferenceEnsemble
 
+
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -19,31 +20,31 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-def new_dataset(previous_prediction_csv_path):
-    previous_prediction_csv = pd.read_csv(previous_prediction_csv_path)
+
+def get_remaining_dataset(prediction_csv_path):
+    prediction_csv = pd.read_csv(prediction_csv_path)
     # Selecting rows of previous prediction which haven't been run over program
-    dataframe_yet_to_run = previous_prediction_csv[previous_prediction_csv.iloc[:, -1].isnull()]
+    dataframe_yet_to_run = prediction_csv[prediction_csv.iloc[:, -1].isnull()]
     # Saving new dataframe in tmp
     test_csv_path = '/tmp/dataframe_yet_to_run.csv'
-    dataframe_yet_to_run.to_csv(test_csv_path, index = False)
+    dataframe_yet_to_run.to_csv(test_csv_path, index=False)
     return test_csv_path
+
 
 def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, do_localisation,
                   num_reg_runs, overwrite, native_space):
-
-    previous_prediction_csv_path = os.path.join(os.path.join(job_dir, 'predictions'), 'prediction.csv')
     if not os.path.exists(job_dir):
         os.makedirs(job_dir)
-        print('No previous run, creating new job directory...')
+        print('Starting new run...')
     else:
+        prediction_csv_path = os.path.join(os.path.join(job_dir, 'predictions'), 'prediction.csv')
         if overwrite:
+            print('Run already exists, overwriting...')
             shutil.rmtree(job_dir)
             os.makedirs(job_dir)
-            print('Run already exists, overwriting...')
-        elif not overwrite and os.path.exists(previous_prediction_csv_path):
+        elif not overwrite and os.path.exists(prediction_csv_path):
             print('Run already exists, completing run...')
-            test_csv_path = new_dataset(test_csv_path, previous_prediction_csv_path)
-
+            test_csv_path = get_remaining_dataset(prediction_csv_path)
 
     with open(config_file, 'r') as f:
         config = json.load(f)
@@ -59,7 +60,6 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     saved_model_paths = saved_model_paths.split()
     n_models = len(saved_model_paths)
     task = config['data']['task']
-    # Both classes called here are in trainer/inference.py
 
     if n_models == 1:
         ModelInference(job_dir, device, model, saver, saved_model_paths[0], task)(test_loader)
@@ -80,58 +80,47 @@ def inference():
                         help='Directory for checkpoints, exports, and '
                              'logs. Use an existing directory to load a '
                              'trained model, or a new directory to retrain')
-
     parser.add_argument('--test-csv-path',
                         default=None,
                         type=str,
                         help='Path to test csv file with paths of images and masks.')
-
     parser.add_argument('--config-file',
                         default=default_config,
                         type=str,
                         help='A json configuration file for the job (see example files)')
-
     parser.add_argument('--device',
                         type=str,
                         default='cpu',
                         help='Device to use for computation')
-
     parser.add_argument('--saved-model-paths',
                         default=default_model_paths,
                         type=str,
                         help='Path to saved model or list of paths separated by spaces.')
-
     parser.add_argument('--write-prob-maps',
                         type=str2bool, nargs='?',
                         const=True,
                         default=False,
                         help='Whether to write probability maps images to disk')
-
     parser.add_argument('--do-localisation',
                         type=str2bool, nargs='?',
                         const=True,
                         default=False,
                         help='Whether to run localisation or not')
-
     parser.add_argument('--num-reg-runs',
                         default=1,
                         type=int,
                         help='How many times to run registration between native scan and CT template.')
-
     parser.add_argument('--overwrite',
                         type=str2bool, nargs='?',
                         const=True,
                         default=False,
                         help='Whether to overwrite run if already exists')
-
     parser.add_argument('--native-space',
                         type=str2bool, nargs='?',
                         const=True,
                         default=True,
                         help='Whether to calculate the volumes in native space or atlas space.')
-
     parse_args, unknown = parser.parse_known_args()
-
     run_inference(**parse_args.__dict__)
 
 
