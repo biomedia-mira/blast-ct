@@ -25,7 +25,7 @@ def console_tool():
     parser.add_argument('--output', metavar='output', type=str, help='Path to output image.', required=True)
     parser.add_argument('--ensemble', help='Whether to use the ensemble (slower but more precise)', action='store_true',
                         default=False)
-    parser.add_argument('--device', help='GPU device index (int) or \'cpu\' (str)', default='cpu')
+    parser.add_argument('--device', help='GPU device image_id (int) or \'cpu\' (str)', default='cpu')
     parser.add_argument('--do-localisation', default=False, action='store_true',
                         help='Whether to run localisation or not')
 

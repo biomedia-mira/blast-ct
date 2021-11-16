@@ -96,13 +96,10 @@ class NiftiPatchSaver(object):
         self.patches = []
         self.extra_output_patches = {key: [] for key in extra_output_names} if extra_output_names is not None else {}
         self.image_index = 0
-        data_index = self.dataset.data_index.copy()
-        self.data_index = data_index.set_index('id')
-        self.prediction_index = pd.DataFrame(columns=self.data_index.columns)
         if os.path.exists(self.prediction_csv_path):
             self.prediction_index = pd.read_csv(self.prediction_csv_path, index_col='id')
         else:
-            self.prediction_index = pd.DataFrame(columns=self.data_index.columns)
+            self.prediction_index = pd.DataFrame(columns=self.dataset.data_index.columns)
 
         localisation_dir = os.path.join(job_dir, 'localisation')
         self.localisation = Localisation(localisation_dir, num_reg_runs, native_space) if do_localisation else None
@@ -129,8 +126,8 @@ class NiftiPatchSaver(object):
 
         if len(self.patches) >= patches_in_image:
             to_write = {}
-            image_id = self.data_index.iloc[self.image_index].name
-            input_image = sitk.ReadImage(self.data_index.loc[image_id, self.dataset.channels[0]])
+            image_id = self.dataset.data_index.iloc[self.image_index].name
+            input_image = sitk.ReadImage(self.dataset.data_index.loc[image_id, self.dataset.channels[0]])
             patches = list(torch.stack(self.patches[0:patches_in_image]).numpy())
             self.patches = self.patches[patches_in_image:]
             reconstruction = reconstruct_image(patches, target_shape, center_points, target_patch_shape)
@@ -148,8 +145,8 @@ class NiftiPatchSaver(object):
                 to_write[name] = images
 
             resolution = self.dataset.resolution if self.dataset.resolution is not None else input_image.GetSpacing()
-            self.prediction_index.loc[image_id, self.data_index.columns] = self.data_index.loc[
-                image_id, self.data_index.columns]
+            columns = self.dataset.data_index.columns
+            self.prediction_index.loc[image_id, columns] = self.dataset.data_index.loc[image_id, columns]
             for name, array in to_write.items():
                 path = os.path.join(self.prediction_dir, f'{str(image_id):s}_{name:s}.nii.gz')
                 self.prediction_index.loc[image_id, name] = path
@@ -167,7 +164,7 @@ class NiftiPatchSaver(object):
                     message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Error saving prediction for {str(image_id)}."
                     continue
 
-            self.data_index.to_csv(self.prediction_csv_path, index=False)
+            self.prediction_index.to_csv(self.prediction_csv_path, index_label='id')
 
             self.image_index += 1
             if self.image_index >= len(self.dataset.image_mapping):

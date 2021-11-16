@@ -34,7 +34,7 @@ class LesionVolumeLocalisationMNI(object):
         # Creating a dictionary to store the region volumes
         region_volumes = {atlas_label_name: None for atlas_label_name in self.roi_dictionary}
         for roi_name, roi_label in self.roi_dictionary.items():
-            # if region is background (index 0)
+            # if region is background (image_id 0)
             if roi_label == 0:
                 continue
             # Create a mask for each region (each atlas label)

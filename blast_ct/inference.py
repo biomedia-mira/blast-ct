@@ -21,14 +21,14 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
-def get_remaining_dataset(prediction_csv_path):
-    prediction_csv = pd.read_csv(prediction_csv_path)
-    # Selecting rows of previous prediction which haven't been run over program
-    dataframe_yet_to_run = prediction_csv[prediction_csv.iloc[:, -1].isnull()]
+def get_remaining_dataset(test_csv_path, prediction_csv_path):
+    test_csv = pd.read_csv(test_csv_path, index_col='id')
+    prediction_csv = pd.read_csv(prediction_csv_path, index_col='id')
+    dataframe_yet_to_run = test_csv.loc[set(test_csv.index) - set(prediction_csv.index)]
     # Saving new dataframe in tmp
-    test_csv_path = '/tmp/dataframe_yet_to_run.csv'
-    dataframe_yet_to_run.to_csv(test_csv_path, index=False)
-    return test_csv_path
+    new_test_csv_path = '/tmp/dataframe_yet_to_run.csv'
+    dataframe_yet_to_run.to_csv(new_test_csv_path, index_label='id')
+    return new_test_csv_path
 
 
 def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, do_localisation,
@@ -44,7 +44,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
             os.makedirs(job_dir)
         elif not overwrite and os.path.exists(prediction_csv_path):
             print('Run already exists, completing run...')
-            test_csv_path = get_remaining_dataset(prediction_csv_path)
+            test_csv_path = get_remaining_dataset(test_csv_path, prediction_csv_path)
 
     with open(config_file, 'r') as f:
         config = json.load(f)

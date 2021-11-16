@@ -42,11 +42,7 @@ class NiftiDataset(data.Dataset):
                  max_cases_in_memory=0,
                  task='segmentation',
                  resolution=None):
-        self.data_index = pd.read_csv(data_csv_path)
-        if 'id' not in self.data_index:
-            raise ValueError('id column no provided in csv file.')
-        if len(self.data_index.id) != len(set(self.data_index.id)):
-            raise ValueError('There are repeated ids in the dataset')
+        self.data_index = pd.read_csv(data_csv_path, index_col='id')
         assert task in ['segmentation', 'classification', 'regression']
 
         self.channels = channels
@@ -68,20 +64,20 @@ class NiftiDataset(data.Dataset):
 
     def get_array_from_dataset(self, index, name, is_discrete=False):
         if name in self.data_index:
-            image = sitk.ReadImage(self.data_index.loc[index][name])
+            image = sitk.ReadImage(self.data_index.loc[index, name])
             image = reorient_image(image, is_discrete)
             if self.resolution is not None:
                 image = rescale(self.resolution, image, is_discrete)
             return sitk.GetArrayFromImage(image).astype(np.float32)
         return None
 
-    def get_case_from_disk(self, index):
-        target = self.get_array_from_dataset(index, self.target, is_discrete=True)
-        sampling_mask = self.get_array_from_dataset(index, self.sampling_mask, is_discrete=True)
+    def get_case_from_disk(self, image_id):
+        target = self.get_array_from_dataset(image_id, self.target, is_discrete=True)
+        sampling_mask = self.get_array_from_dataset(image_id, self.sampling_mask, is_discrete=True)
 
         stack = list()
         for channel in self.channels:
-            stack.append(self.get_array_from_dataset(index, channel, is_discrete=False))
+            stack.append(self.get_array_from_dataset(image_id, channel, is_discrete=False))
         image = np.stack(stack)
 
         if sampling_mask is None:
@@ -94,9 +90,9 @@ class NiftiDataset(data.Dataset):
         for augmentation in self.augmentation:
             image, target, sampling_mask = augmentation(image, None if self.task == 'classification' else target,
                                                         sampling_mask)
-
-        sample_weight = np.array(self.data_index[self.sample_weight][index],
-                                 dtype=np.float32) if self.sample_weight is not None else None
+        if self.sample_weight is not None:
+            raise NotImplementedError
+        sample_weight = None
 
         # make sure these arrays are read-only so that if they are stored they won't change
         for array in [image, target, sampling_mask, sample_weight]:
@@ -106,14 +102,15 @@ class NiftiDataset(data.Dataset):
         return image, target, sampling_mask, sample_weight
 
     def get_case(self, index):
-        if index in self.case_memory:
-            image, target, sampling_mask, sample_weight = self.case_memory[index]
+        image_id = self.data_index.iloc[index].name
+        if image_id in self.case_memory:
+            image, target, sampling_mask, sample_weight = self.case_memory[image_id]
         else:
-            image, target, sampling_mask, sample_weight = self.get_case_from_disk(index)
+            image, target, sampling_mask, sample_weight = self.get_case_from_disk(image_id)
             if self.max_cases_in_memory > 0:
                 if len(self.case_memory) >= self.max_cases_in_memory:
                     self.case_memory.pop(list(self.case_memory.keys())[0])
-                self.case_memory[index] = [image, target, sampling_mask, sample_weight]
+                self.case_memory[image_id] = [image, target, sampling_mask, sample_weight]
 
         return image, target, sampling_mask, sample_weight
 
@@ -244,8 +241,8 @@ class FullImageToOverlappingPatchesNiftiDataset(NiftiDataset, data.IterableDatas
         self.target_patch_shape = target_patch_shape
         self.index_mapping = []
         self.image_mapping = {}
-        for image_index, row in self.data_index.iterrows():
-            image = sitk.ReadImage(self.data_index.loc[image_index][self.channels[0]])
+        for image_index, (image_id, row) in enumerate(self.data_index.iterrows()):
+            image = sitk.ReadImage(self.data_index.loc[image_id, self.channels[0]])
             image = reorient_image(image, False)
             if self.resolution is not None:
                 image = rescale(self.resolution, image)
