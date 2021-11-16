@@ -76,15 +76,14 @@ class LesionVolumeLocalisationMNI(object):
             for roi_name in localised_volumes[class_name].keys():
                 volume = localised_volumes[class_name][roi_name]
                 if volume is not None:
-                    data_index.loc[
-                        data_index['id'] == image_id, f'{self.label_map_name}_{class_name:s}_{roi_name:s}_ml'] = volume
+                    data_index.loc[image_id, f'{self.label_map_name}_{class_name:s}_{roi_name:s}_ml'] = volume
 
         # add region volumes
-        data_index.loc[data_index['id'] == image_id, f'Brain_volume_ml'] = self.calc_volume_ml(brain_mask)
+        data_index.loc[image_id, f'Brain_volume_ml'] = self.calc_volume_ml(brain_mask)
         for roi_name in region_volumes.keys():
             volume = region_volumes[roi_name]
             if volume is not None:
-                data_index.loc[data_index['id'] == image_id, f'{roi_name:s}_volume_ml'] = region_volumes[roi_name]
+                data_index.loc[image_id, f'{roi_name:s}_volume_ml'] = region_volumes[roi_name]
 
         if self.debug_mode and self.native_space:
             atlas_native_space_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_parc_atlas_native.nii.gz')
@@ -92,6 +91,6 @@ class LesionVolumeLocalisationMNI(object):
             brain_mask_native_space_path = os.path.join(self.localisation_dir,
                                                         f'{str(image_id):s}_brain_mask_native.nii.gz')
             sitk.WriteImage(brain_mask, brain_mask_native_space_path)
-            data_index.loc[data_index['id'] == image_id, 'atlas_in_native_space'] = atlas_native_space_path
-            data_index.loc[data_index['id'] == image_id, 'brain_mask_native_space'] = brain_mask_native_space_path
+            data_index.loc[image_id, 'atlas_in_native_space'] = atlas_native_space_path
+            data_index.loc[image_id, 'brain_mask_native_space'] = brain_mask_native_space_path
         return data_index

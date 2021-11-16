@@ -3,7 +3,7 @@ import pandas as pd
 import SimpleITK as sitk
 import numpy as np
 import torch
-
+import pandas as pd
 from blast_ct.localisation.localise_lesions import LesionVolumeLocalisationMNI
 from blast_ct.localisation.register_to_template import RegistrationToCTTemplate
 from blast_ct.nifti.datasets import FullImageToOverlappingPatchesNiftiDataset
@@ -19,7 +19,7 @@ def add_predicted_volumes_to_dataframe(dataframe, id_, array, resolution):
         if i == 0:
             continue
         volume = np.sum(array == i) * voxel_volume_ml
-        dataframe.loc[dataframe['id'] == id_, f'{class_name:s}_predicted_volume_ml'] = volume
+        dataframe.loc[id_, f'{class_name:s}_predicted_volume_ml'] = volume
     return dataframe
 
 
@@ -89,16 +89,23 @@ class NiftiPatchSaver(object):
         assert isinstance(dataloader.dataset, FullImageToOverlappingPatchesNiftiDataset)
 
         self.prediction_dir = os.path.join(job_dir, 'predictions')
+        self.prediction_csv_path = os.path.join(self.prediction_dir, 'prediction.csv')
         self.dataloader = dataloader
         self.dataset = dataloader.dataset
         self.write_prob_maps = write_prob_maps
         self.patches = []
         self.extra_output_patches = {key: [] for key in extra_output_names} if extra_output_names is not None else {}
         self.image_index = 0
-        self.data_index = self.dataset.data_index.copy()
+        data_index = self.dataset.data_index.copy()
+        self.data_index = data_index.set_index('id')
+        self.prediction_index = pd.DataFrame(columns=self.data_index.columns)
+        if os.path.exists(self.prediction_csv_path):
+            self.prediction_index = pd.read_csv(self.prediction_csv_path, index_col='id')
+        else:
+            self.prediction_index = pd.DataFrame(columns=self.data_index.columns)
+
         localisation_dir = os.path.join(job_dir, 'localisation')
         self.localisation = Localisation(localisation_dir, num_reg_runs, native_space) if do_localisation else None
-        self.prediction_csv_path = os.path.join(self.prediction_dir, 'prediction.csv')
 
     def reset(self):
         self.image_index = 0
@@ -122,8 +129,8 @@ class NiftiPatchSaver(object):
 
         if len(self.patches) >= patches_in_image:
             to_write = {}
-            image_id = self.dataset.data_index.loc[self.image_index]['id']
-            input_image = sitk.ReadImage(self.dataset.data_index.loc[self.image_index][self.dataset.channels[0]])
+            image_id = self.data_index.iloc[self.image_index].name
+            input_image = sitk.ReadImage(self.data_index.loc[image_id, self.dataset.channels[0]])
             patches = list(torch.stack(self.patches[0:patches_in_image]).numpy())
             self.patches = self.patches[patches_in_image:]
             reconstruction = reconstruct_image(patches, target_shape, center_points, target_patch_shape)
@@ -139,31 +146,28 @@ class NiftiPatchSaver(object):
                 self.extra_output_patches[name] = self.extra_output_patches[name][patches_in_image:]
                 images = reconstruct_image(patches, target_shape, center_points, target_patch_shape)
                 to_write[name] = images
-            resolution = self.dataset.resolution if self.dataset.resolution is not None else input_image.GetSpacing()
 
+            resolution = self.dataset.resolution if self.dataset.resolution is not None else input_image.GetSpacing()
+            self.prediction_index.loc[image_id, self.data_index.columns] = self.data_index.loc[
+                image_id, self.data_index.columns]
             for name, array in to_write.items():
                 path = os.path.join(self.prediction_dir, f'{str(image_id):s}_{name:s}.nii.gz')
-                self.data_index.loc[self.data_index['id'] == image_id, name] = path
+                self.prediction_index.loc[image_id, name] = path
                 try:
                     output_image = save_image(array, input_image, path, resolution)
                     if name == 'prediction':
-                        self.data_index = add_predicted_volumes_to_dataframe(self.data_index, image_id, array,
-                                                                             resolution)
+                        self.prediction_index = add_predicted_volumes_to_dataframe(self.prediction_index, image_id,
+                                                                                   array,
+                                                                                   resolution)
                         if self.localisation is not None:
-                            self.data_index = self.localisation(self.data_index, image_id, input_image, output_image)
+                            self.prediction_index = self.localisation(self.prediction_index, image_id, input_image,
+                                                                      output_image)
                     message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Saved prediction for {str(image_id)}."
                 except:
                     message = f"{self.image_index:d}/{len(self.dataset.data_index):d}: Error saving prediction for {str(image_id)}."
                     continue
 
-            if os.path.exists(self.prediction_csv_path):
-                prediction_csv = pd.read_csv(self.prediction_csv_path)
-                prediction_csv.set_index('id', inplace=True)
-                prediction_csv.loc[image_id] = self.data_index.loc[self.image_index]
-                prediction_csv.to_csv(self.prediction_csv_path, index=True, index_label='id')
-
-            else:
-                self.data_index.to_csv(self.prediction_csv_path, index=False)
+            self.data_index.to_csv(self.prediction_csv_path, index=False)
 
             self.image_index += 1
             if self.image_index >= len(self.dataset.image_mapping):
