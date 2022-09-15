@@ -155,7 +155,7 @@ class NiftiPatchSaver(object):
                     if name == 'prediction':
                         self.prediction_index = add_predicted_volumes_to_dataframe(self.prediction_index, image_id,
                                                                                    sitk.GetArrayFromImage(output_image),
-                                                                                   resolution)
+                                                                                   output_image.GetSpacing())
                         if self.localisation is not None:
                             self.prediction_index = self.localisation(self.prediction_index, image_id, input_image,
                                                                       output_image)
