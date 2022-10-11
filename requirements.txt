@@ -1,6 +1,6 @@
 scipy
 numpy
 pandas
-SimpleITK==1.2.4
+SimpleITK==1.2.0
 torch>=1.9
 tensorboard

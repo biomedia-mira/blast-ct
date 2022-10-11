@@ -1,4 +1,4 @@
-# BLAST-CT
+# BLAST-CT - Version 2.0
 [![DOI](https://zenodo.org/badge/246262662.svg)](https://zenodo.org/badge/latestdoi/246262662)
 
 **B**rain **L**esion **A**nalysis and **S**egmentation **T**ool for **C**omputed **T**omography
@@ -16,11 +16,12 @@ Monteiro and Newcombe are equal first authors. Menon and Glocker are equal senio
 ## Source code
 
 The provided source code enables training and testing of our convolutional neural network designed for multi-class brain lesion segmentation in head CT.
+Additionally, it allows for localisation of the segmented image, i.e. calculation of the volume of lesion per brain region (list of regions in blast_ct/data/localisation_files/atlas_labels.csv).
+**NOTE:** The localisation is based on linear image registration, hence it does not allow for voxel-wise precision.
 
 ## Pre-trained model
 
-We also make available a model that has been trained on a set of 184 annotated CT scans obtained from multiple clinical sites. 
-This model has been validated on an internal set of 655 CT scans, and on an external, independent set of scans from 500 patients from the publicly available CQ500 dataset. The results are presented and discussed in our paper (to appear soon).
+In version 2.0.0 of this tool, we also make available a model that has been trained on a set of 680 annotated CT scans obtained from multiple clinical sites. 
 
 The output of our lesion segmentation tool is a segmentation map in NIfTI format with integer values ranging from 1 to 4 representing:
 1. Intraparenchymal haemorrhage (IPH);
@@ -28,13 +29,16 @@ The output of our lesion segmentation tool is a segmentation map in NIfTI format
 3. Perilesional oedema;
 4. Intraventricular haemorrhage (IVH).
 
+A CSV file with the total volume of lesion calculated for each lesion class is also part of the output. If the user chooses to perform localisation of lesions, 
+this file will also include the volume of lesion per brain region, the volume of each brain region as well as the total brain volume.
+
 **As of the latest version, the tool resamples images internally and returns the output segmentation in the same space as the input image, so there is no need to preprocess the input.**
 ## Installation
 
 ### Linux and MacOS
 On a fresh python3 virtual environment install `blast-ct` via
 
-`pip install git+https://github.com/biomedia-mira/blast-ct.git`
+`pip install git+https://github.com/biomedia-mira/blast-ct.git@localisation`
 
 ### Windows
 If you are using miniconda, create a new conda environment and install PyTorch
@@ -47,7 +51,7 @@ conda install pytorch torchvision cudatoolkit=10.1 -c pytorch
 
 Then install `blast-ct` via
 
-`pip install git+https://github.com/biomedia-mira/blast-ct.git`
+`pip install git+https://github.com/biomedia-mira/blast-ct.git@localisation`
 
 # Usage with examples
 
@@ -67,8 +71,10 @@ To run inference on one image using our pre-trained model:
 2. `--output`: path where prediction will be saved (with extension `.nii.gz`);
 3. `--device <device-id>` the device used for computation. Can be `'cpu'` (up to 1 hour per image) or an integer 
 indexing a cuda capable GPU on your machine. Defaults to CPU;
-4. pass `--ensemble true`: to use an ensemble of 12 models which improves segmentation quality but slows down inference
+4. Pass `--ensemble True`: to use an ensemble of 15 models which improves segmentation quality but slows down inference
  (recommended for gpu).
+5. Pass `--localisation True` to localise the segmented lesion, i.e. calculate the volume of lesion per brain region.
+6. (Only if `--do-localisation True`) `'--num-reg-runs'`: how many times to run registration between native scan and CT template. Running it more than one time prevents initialisation errors, as only the best performing run is kept.
 
 ##### Working example:
 
@@ -92,7 +98,9 @@ blast-ct-inference \
 images to be processed;
 3. `--device <device-id>` the device used for computation. Can be `'cpu'` (up to 1 hour per image) or an integer 
 indexing a cuda capable GPU on your machine. Defaults to CPU;
-4. pass `--overwrite true`: to write over existing `job-dir`.
+4. Pass `--overwrite True`: to write over existing `job-dir`.
+5. Pass `--do-localisation True` to localise the segmented lesion, i.e. calculate the volume of lesion per brain region.
+6. (Only if `--do-localisation True`) `'--num-reg-runs'`: how many times to run registration between native scan and CT template. Running it more than one time prevents initialisation errors, as only the best performing run is kept.
 
 ##### Working example:
 
@@ -158,12 +166,15 @@ blast-ct-inference \
 
 1. `--job-dir`: the path to the directory where the predictions and logs will be saved;
 2. `--config-file`: the path to a json config file (see `data/config.json` for example);
-4. `--test-csv-path`: the path to a [csv file](#csv-files-for-inference-and-training) containing the paths of the 
+3. `--test-csv-path`: the path to a [csv file](#csv-files-for-inference-and-training) containing the paths of the 
 images to be processed;
 4. `--device <device-id>` the device used for computation. Can be `'cpu'` (up to 1 hour per image) or an integer 
 indexing a cuda capable GPU on your machine. Defaults to CPU;
  `--saved-model-paths` is a list of pre-trained model paths;
-5. pass `--overwrite true`: to write over existing `job-dir`.
+5. pass `--overwrite true`: to write over existing `job-dir`. 
+6. pass `--do-localisation True` to localise the segmented lesion, i.e. calculate the volume of lesion per brain region.
+7. (Only if `--do-localisation True`) `'--num-reg-runs'`: how many times to run registration between native scan and CT template. Running it more than one time prevents initialisation errors, as only the best performing run is kept.
+
 
 ##### Working example:
 
@@ -175,6 +186,7 @@ blast-ct-inference \
     --test-csv-path data/data.csv \
     --device 0 \
     --saved-model-paths "data/saved_models/model_1.pt data/saved_models/model_3.pt data/saved_models/model_6.pt
+    --do-localisation True
 ```
 
 ## csv files for inference and training
