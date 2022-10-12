@@ -27,7 +27,7 @@ setuptools.setup(
         'scipy',
         'numpy',
         'pandas',
-        'SimpleITK==1.2.0',
+        'SimpleITK==1.2.4',
         'torch',
         'tensorboard'
     ],
