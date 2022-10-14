@@ -70,7 +70,7 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
 def inference():
     install_dir = os.path.dirname(os.path.realpath(__file__))
     default_config = os.path.join(install_dir, 'data/config.json')
-    saved_model_paths = [os.path.join(install_dir, f'data/saved_models/model_{i:d}.pt') for i in range(1, 13)]
+    saved_model_paths = [os.path.join(install_dir, f'data/saved_models/model_{i:d}.torch_model') for i in range(1, 16)]
     default_model_paths = ' '.join(saved_model_paths)
 
     parser = argparse.ArgumentParser()

@@ -25,7 +25,7 @@ def console_tool():
     parser.add_argument('--output', metavar='output', type=str, help='Path to output image.', required=True)
     parser.add_argument('--ensemble', help='Whether to use the ensemble (slower but more precise)', action='store_true',
                         default=False)
-    parser.add_argument('--device', help='GPU device image_id (int) or \'cpu\' (str)', default='cpu')
+    parser.add_argument('--device', help='GPU device index (int) or \'cpu\' (str)', default='cpu')
     parser.add_argument('--do-localisation', default=False, action='store_true',
                         help='Whether to run localisation or not')
 
@@ -53,10 +53,10 @@ def console_tool():
     saver = NiftiPatchSaver(job_dir, test_loader, write_prob_maps=False, do_localisation=parse_args.do_localisation)
 
     if not parse_args.ensemble:
-        model_path = os.path.join(install_dir, 'data/saved_models/model_1.pt')
+        model_path = os.path.join(install_dir, 'data/saved_models/model_1.torch_model')
         ModelInference(job_dir, device, model, saver, model_path, 'segmentation')(test_loader)
     else:
-        model_paths = [os.path.join(install_dir, f'data/saved_models/model_{i:d}.pt') for i in range(1, 13)]
+        model_paths = [os.path.join(install_dir, f'data/saved_models/model_{i:d}.torch_model') for i in range(1, 13)]
         ModelInferenceEnsemble(job_dir, device, model, saver, model_paths, task='segmentation')(test_loader)
     output_dataframe = pd.read_csv(os.path.join(job_dir, 'predictions/prediction.csv'))
 
