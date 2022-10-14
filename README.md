@@ -1,7 +1,7 @@
-# BLAST-CT - Version 2.0
+# BLAST-CT
 [![DOI](https://zenodo.org/badge/246262662.svg)](https://zenodo.org/badge/latestdoi/246262662)
 
-**B**rain **L**esion **A**nalysis and **S**egmentation **T**ool for **C**omputed **T**omography
+**B**rain **L**esion **A**nalysis and **S**egmentation **T**ool for **C**omputed **T**omography - Version 2.0.0
 
 This repository provides our deep learning image segmentation tool for traumatic brain injuries in 3D CT scans.
 
@@ -108,6 +108,7 @@ Run the following in the `blast-ct-example` directory (GPU example):
 
 `blast-ct-inference --job-dir my-inference-job --test-csv-path data/data.csv --device 0`
 
+**NOTE:** If the run breaks before all images are processed, run again with `--overwrite False` to finish from where it was left on the previous run.
 
 ## Training models on your own data
 
