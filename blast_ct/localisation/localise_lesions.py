@@ -7,7 +7,7 @@ import pandas as pd
 
 class LesionVolumeLocalisationMNI(object):
     def __init__(self, localisation_dir, native_space, atlas_label_map_path, brain_mask_path, roi_dictionary_csv,
-                 label_map_name, debug_mode=False):
+                 label_map_name, write_registration_info):
 
         self.atlas_label_map = sitk.ReadImage(atlas_label_map_path)
         self.brain_mask = sitk.ReadImage(brain_mask_path, sitk.sitkInt8)
@@ -18,7 +18,7 @@ class LesionVolumeLocalisationMNI(object):
         self.native_space = native_space
         self.localisation_dir = localisation_dir
         self.label_map_name = label_map_name
-        self.debug_mode = debug_mode
+        self.write_registration_info = write_registration_info
 
     # Calculate total volume of a region or of the brain
     @staticmethod
@@ -85,7 +85,7 @@ class LesionVolumeLocalisationMNI(object):
             if volume is not None:
                 data_index.loc[image_id, f'{roi_name:s}_volume_ml'] = region_volumes[roi_name]
 
-        if self.debug_mode and self.native_space:
+        if self.write_registration_info and self.native_space:
             atlas_native_space_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_parc_atlas_native.nii.gz')
             sitk.WriteImage(atlas_label_map, atlas_native_space_path)
             brain_mask_native_space_path = os.path.join(self.localisation_dir,

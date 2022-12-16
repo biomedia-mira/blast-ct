@@ -127,6 +127,8 @@ class RegistrationToCTTemplate(object):
         transform, iterations_rig, final_metric_rig, iterations_aff, final_metric_aff, image_resampled_aff \
             = self.get_best_run(final_metric_aff_dict)
 
+        data_index.loc[image_id, 'quality_control_metric'] = final_metric_aff
+
         if self.debug_mode:
             resampled_image_path = os.path.join(self.localisation_dir, f'{str(image_id):s}_resampled.nii.gz')
             sitk.WriteImage(image_resampled_aff, resampled_image_path)
@@ -136,7 +138,6 @@ class RegistrationToCTTemplate(object):
             data_index.loc[image_id, 'iterations_rig'] = iterations_rig
             data_index.loc[image_id, 'final_metric_rig'] = final_metric_rig
             data_index.loc[image_id, 'iterations_aff'] = iterations_aff
-            data_index.loc[image_id, 'final_metric_aff'] = final_metric_aff
             data_index.loc[image_id, 'image_resampled'] = resampled_image_path
             data_index.loc[image_id, 'aff_transform'] = transform_path
 

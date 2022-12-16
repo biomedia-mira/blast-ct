@@ -60,7 +60,7 @@ def reconstruct_image(patches, image_shape, center_points, patch_shape):
 
 
 class Localisation(object):
-    def __init__(self, localisation_dir, num_runs, native_space):
+    def __init__(self, localisation_dir, num_runs, native_space, write_registration_info):
         if not os.path.exists(localisation_dir):
             os.makedirs(localisation_dir)
         self.localisation_dir = localisation_dir
@@ -74,7 +74,8 @@ class Localisation(object):
 
         self.register = RegistrationToCTTemplate(localisation_dir, target_template_path, num_runs=num_runs)
         self.localise = LesionVolumeLocalisationMNI(localisation_dir, native_space, atlas_label_map_path,
-                                                    brain_mask_path, roi_dictionary_csv, 'prediction')
+                                                    brain_mask_path, roi_dictionary_csv, 'prediction',
+                                                    write_registration_info)
 
     def __call__(self, data_index, image_id, input_image, prediction):
         transform, data_index = self.register(data_index, input_image, image_id)
@@ -85,7 +86,7 @@ class Localisation(object):
 
 class NiftiPatchSaver(object):
     def __init__(self, job_dir, dataloader, write_prob_maps=True, extra_output_names=None, do_localisation=False,
-                 num_reg_runs=1, native_space=True):
+                 num_reg_runs=1, native_space=True, write_registration_info=False):
         assert isinstance(dataloader.dataset, FullImageToOverlappingPatchesNiftiDataset)
 
         self.prediction_dir = os.path.join(job_dir, 'predictions')
@@ -102,7 +103,7 @@ class NiftiPatchSaver(object):
             self.prediction_index = pd.DataFrame(columns=self.dataset.data_index.columns)
 
         localisation_dir = os.path.join(job_dir, 'localisation')
-        self.localisation = Localisation(localisation_dir, num_reg_runs, native_space) if do_localisation else None
+        self.localisation = Localisation(localisation_dir, num_reg_runs, native_space, write_registration_info) if do_localisation else None
 
     def reset(self):
         self.image_index = 0

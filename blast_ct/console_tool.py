@@ -50,6 +50,7 @@ def console_tool():
 
     model = get_model(config)
     test_loader = get_test_loader(config, model, test_csv_path, use_cuda=not device.type == 'cpu')
+
     saver = NiftiPatchSaver(job_dir, test_loader, write_prob_maps=False, do_localisation=parse_args.do_localisation)
 
     if not parse_args.ensemble:

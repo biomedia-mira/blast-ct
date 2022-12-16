@@ -31,8 +31,8 @@ def get_remaining_dataset(test_csv_path, prediction_csv_path):
     return new_test_csv_path
 
 
-def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps, do_localisation,
-                  num_reg_runs, overwrite, native_space):
+def run_inference(install_dir, job_dir, test_csv_path, config_file, device, saved_model_paths, write_prob_maps,
+                  localisation, save_atlas_and_brain_mask_native_space, number_of_runs, overwrite, native_space):
     if not os.path.exists(job_dir):
         os.makedirs(job_dir)
         print('Starting new run...')
@@ -55,8 +55,13 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
     extra_output_names = config['test']['extra_output_names'] if 'extra_output_names' in config['test'] else None
 
     saver = NiftiPatchSaver(job_dir, test_loader, write_prob_maps=write_prob_maps,
-                            extra_output_names=extra_output_names, do_localisation=do_localisation,
-                            num_reg_runs=num_reg_runs, native_space=native_space)
+                            extra_output_names=extra_output_names, localisation=localisation,
+                            number_of_runs=number_of_runs, native_space=native_space,
+                            write_registration_info=save_atlas_and_brain_mask_native_space)
+
+    # saver = NiftiPatchSaver(job_dir, test_loader, write_prob_maps=write_prob_maps,
+    #                         extra_output_names=extra_output_names, do_localisation=do_localisation,
+    #                         num_reg_runs=num_reg_runs, native_space=native_space)
     saved_model_paths = saved_model_paths.split()
     n_models = len(saved_model_paths)
     task = config['data']['task']
@@ -110,6 +115,10 @@ def inference():
                         default=1,
                         type=int,
                         help='How many times to run registration between native scan and CT template.')
+    parser.add_argument('--save-atlas-and-brain-mask-native-space',
+                        default=False,
+                        action='store_true',
+                        help='Whether to write the parcellated atlas and brain mask aligned to native space to the disk.')
     parser.add_argument('--overwrite',
                         type=str2bool, nargs='?',
                         const=True,
