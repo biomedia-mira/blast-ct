@@ -1,13 +1,15 @@
-import os
 import argparse
 import json
+import os
+import random
+
 import numpy as np
 import torch
-import random
 import torch.nn
-from blast_ct.trainer.model_trainer import ModelTrainer
+
 from blast_ct.read_config import get_model, get_optimizer, get_loss, get_train_loader, get_valid_loader, \
     get_test_loader, get_training_hooks
+from blast_ct.trainer.model_trainer import ModelTrainer
 
 
 def run_job(job_dir, train_csv_path, valid_csv_path, config_file, num_epochs, device, random_seed):
@@ -107,3 +109,7 @@ def train():
     parse_args, unknown = parser.parse_known_args()
 
     run_ensemble(**parse_args.__dict__)
+
+
+if __name__ == "__main__":
+    train()

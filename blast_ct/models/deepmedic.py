@@ -1,5 +1,6 @@
-import torch.nn as nn
 import torch
+import torch.nn as nn
+
 from blast_ct.models.base import BiomedicalBlock, DownSample, UpSample, PreActBlock, crop_center
 
 SCALE_FACTORS = ((5, 5, 5), (3, 3, 3), (1, 1, 1))

@@ -61,7 +61,7 @@ class ModelTrainer(object):
             self.current_state.update(state)
             [hook.after_batch() for hook in self.hooks]
         [hook.after_epoch() for hook in self.hooks]
-        self.lr_scheduler.step(epoch)
+        self.lr_scheduler.step()
         return
 
     def __call__(self, dataloader, num_epochs):
