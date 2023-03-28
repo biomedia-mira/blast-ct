@@ -38,7 +38,7 @@ this file will also include the volume of lesion per brain region, the volume of
 ### Linux and MacOS
 On a fresh python3 virtual environment install `blast-ct` via
 
-`pip install git+https://github.com/biomedia-mira/blast-ct.git@localisation`
+`pip install git+https://github.com/biomedia-mira/blast-ct.git`
 
 ### Windows
 If you are using miniconda, create a new conda environment and install PyTorch
