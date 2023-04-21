@@ -98,7 +98,7 @@ blast-ct-inference \
 images to be processed;
 3. `--device <device-id>` the device used for computation. Can be `'cpu'` (up to 1 hour per image) or an integer 
 indexing a cuda capable GPU on your machine. Defaults to CPU;
-4. Pass `--overwrite True`: to write over existing `job-dir`.
+4. Pass `--overwrite True`: to write over existing `job-dir`. Set as `False` if you want to continue a run previously started.
 5. Pass `--do-localisation True` to localise the segmented lesion, i.e. calculate the volume of lesion per brain region.
 6. (Only if `--do-localisation True`) `'--num-reg-runs'`: how many times to run registration between native scan and CT template. Running it more than one time prevents initialisation errors, as only the best performing run is kept.
 
@@ -135,7 +135,7 @@ images used to keep track of the model's performance during training;
 6. `--device <device-id>` the device used for computation (`'cpu'` or integer indexing GPU). GPU is strongly recommended.
 7. `-random-seeds`: a list of random seeds used for training. 
 Pass more than one to train multiple models one after the other.
-8. pass `--overwrite true`: to write over existing `job-dir`.
+8. pass `--overwrite True`: to write over existing `job-dir`. Set as `False` if you want to continue a run previously started.
 
 
 ##### Working example:
@@ -172,7 +172,7 @@ images to be processed;
 4. `--device <device-id>` the device used for computation. Can be `'cpu'` (up to 1 hour per image) or an integer 
 indexing a cuda capable GPU on your machine. Defaults to CPU;
  `--saved-model-paths` is a list of pre-trained model paths;
-5. pass `--overwrite true`: to write over existing `job-dir`. 
+5. pass `--overwrite True`: to write over existing `job-dir`. Set as `False` if you want to continue a run previously started.
 6. pass `--do-localisation True` to localise the segmented lesion, i.e. calculate the volume of lesion per brain region.
 7. (Only if `--do-localisation True`) `'--num-reg-runs'`: how many times to run registration between native scan and CT template. Running it more than one time prevents initialisation errors, as only the best performing run is kept.
 
