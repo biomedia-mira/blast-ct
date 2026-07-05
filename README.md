@@ -1,7 +1,9 @@
 # BLAST-CT
 [![DOI](https://zenodo.org/badge/246262662.svg)](https://zenodo.org/badge/latestdoi/246262662)
 
-**B**rain **L**esion **A**nalysis and **S**egmentation **T**ool for **C**omputed **T**omography - Version 2.0.0
+**B**rain **L**esion **A**nalysis and **S**egmentation **T**ool for **C**omputed **T**omography - Version 2.1.0
+
+> The authoritative version number lives in `pyproject.toml` under `[project].version`. The README, the built wheel/sdist, and the PyPI release all derive from that single field, so update it there when cutting a new release.
 
 This repository provides our deep learning image segmentation tool for traumatic brain injuries in 3D CT scans.
 
@@ -35,23 +37,35 @@ this file will also include the volume of lesion per brain region, the volume of
 **As of the latest version, the tool resamples images internally and returns the output segmentation in the same space as the input image, so there is no need to preprocess the input.**
 ## Installation
 
-### Linux and MacOS
-On a fresh python3 virtual environment install `blast-ct` via
-
-`pip install git+https://github.com/biomedia-mira/blast-ct.git`
-
-### Windows
-If you are using miniconda, create a new conda environment and install PyTorch
+`blast-ct` requires Python 3.9 or newer. Install from PyPI into a fresh virtual environment:
 
 ```
-conda create -n blast-ct python=3
-conda activate blast-ct
-conda install pytorch torchvision cudatoolkit=10.1 -c pytorch
+python -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install blast-ct
 ```
 
-Then install `blast-ct` via
+Or install the latest development version directly from GitHub:
 
-`pip install git+https://github.com/biomedia-mira/blast-ct.git`
+```
+pip install git+https://github.com/biomedia-mira/blast-ct.git
+```
+
+The package pulls in `torch`, `SimpleITK>=2.2`, `numpy`, `scipy`, `pandas` and `tensorboard`. On Linux and Windows the default PyTorch wheel already ships with CUDA support, so inference will use your GPU automatically if one is available — no separate CUDA install is required. On macOS the default wheel uses CPU / MPS. If you need a specific CUDA version, follow the [PyTorch install instructions](https://pytorch.org/get-started/locally/) before installing `blast-ct`.
+
+### Pre-trained model weights
+
+The wheel published to PyPI does **not** ship the pre-trained model weights or the large atlas NIfTI templates (~90 MB total). They are downloaded automatically from the [GitHub repository](https://github.com/biomedia-mira/blast-ct) the first time you run inference and are cached under:
+
+* macOS: `~/Library/Caches/blast_ct/`
+* Linux: `$XDG_CACHE_HOME/blast_ct/` (falls back to `~/.cache/blast_ct/`)
+* Windows: `%LOCALAPPDATA%\blast_ct\` (set `BLAST_CT_CACHE_DIR` if you want a different location)
+
+To pre-fetch all assets ahead of time (e.g. before running offline), run:
+
+```
+python -c "from blast_ct.assets import prefetch_all; prefetch_all()"
+```
 
 # Usage with examples
 

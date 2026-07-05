@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage import gaussian_filter
 
 
 # All augmentations can't alter state after __init__ because of dataset class when num_workers > 0

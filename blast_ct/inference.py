@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import shutil
 
+from blast_ct.assets import get_config_path, get_model_paths
 from blast_ct.nifti.savers import NiftiPatchSaver
 from blast_ct.read_config import get_model, get_test_loader
 from blast_ct.train import set_device
@@ -73,10 +74,8 @@ def run_inference(job_dir, test_csv_path, config_file, device, saved_model_paths
 
 
 def inference():
-    install_dir = os.path.dirname(os.path.realpath(__file__))
-    default_config = os.path.join(install_dir, 'data/config.json')
-    saved_model_paths = [os.path.join(install_dir, f'data/saved_models/model_{i:d}.torch_model') for i in range(1, 16)]
-    default_model_paths = ' '.join(saved_model_paths)
+    default_config = get_config_path()
+    default_model_paths = ' '.join(get_model_paths(15))
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--job-dir',

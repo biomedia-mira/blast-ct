@@ -3,3 +3,6 @@ venv
 _unused
 */__pycache__/*
 *.pyc
+*.egg-info/
+build/
+dist/

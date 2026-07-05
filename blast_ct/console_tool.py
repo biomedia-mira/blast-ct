@@ -6,6 +6,7 @@ import sys
 
 import pandas as pd
 
+from blast_ct.assets import get_config_path, get_model_path, get_model_paths
 from blast_ct.nifti.savers import NiftiPatchSaver
 from blast_ct.read_config import get_model, get_test_loader
 from blast_ct.train import set_device
@@ -36,8 +37,7 @@ def console_tool():
     if not (parse_args.output[-7:] == '.nii.gz'):
         raise IOError('Output file must be of type .nii.gz')
 
-    install_dir = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(install_dir, 'data/config.json'), 'r') as f:
+    with open(get_config_path(), 'r') as f:
         config = json.load(f)
 
     device = set_device(parse_args.device)
@@ -54,10 +54,10 @@ def console_tool():
     saver = NiftiPatchSaver(job_dir, test_loader, write_prob_maps=False, do_localisation=parse_args.do_localisation)
 
     if not parse_args.ensemble:
-        model_path = os.path.join(install_dir, 'data/saved_models/model_1.torch_model')
+        model_path = get_model_path(1)
         ModelInference(job_dir, device, model, saver, model_path, 'segmentation')(test_loader)
     else:
-        model_paths = [os.path.join(install_dir, f'data/saved_models/model_{i:d}.torch_model') for i in range(1, 13)]
+        model_paths = get_model_paths(12)
         ModelInferenceEnsemble(job_dir, device, model, saver, model_paths, task='segmentation')(test_loader)
     output_dataframe = pd.read_csv(os.path.join(job_dir, 'predictions/prediction.csv'))
 
