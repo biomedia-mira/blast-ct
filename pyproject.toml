@@ -9,7 +9,7 @@ description = "Automatic segmentation of Traumatic Brain Injury (TBI) in Head CT
 readme = "README.md"
 license = { file = "LICENSE.txt" }
 authors = [
-    { name = "Miguel Monteiro", email = "miguel.monteiro@imperial.ac.uk" },
+    { name = "Miguel Monteiro", email = "mab.mtr@gmail.com" },
 ]
 requires-python = ">=3.9"
 classifiers = [
