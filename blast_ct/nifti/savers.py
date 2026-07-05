@@ -65,8 +65,8 @@ class Localisation(object):
             os.makedirs(localisation_dir)
         self.localisation_dir = localisation_dir
 
-        asset_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
-                                 'data/localisation_files')
+        from blast_ct.assets import get_localisation_dir
+        asset_dir = get_localisation_dir()
         target_template_path = os.path.join(asset_dir, 'ct_template.nii.gz')
         atlas_label_map_path = os.path.join(asset_dir, 'atlas_template_space.nii.gz')
         brain_mask_path = os.path.join(asset_dir, 'ct_template_mask.nii.gz')

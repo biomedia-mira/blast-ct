@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blast_ct"
+version = "2.1.0"
+description = "Automatic segmentation of Traumatic Brain Injury (TBI) in Head CT"
+readme = "README.md"
+license = { file = "LICENSE.txt" }
+authors = [
+    { name = "Miguel Monteiro", email = "miguel.monteiro@imperial.ac.uk" },
+]
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+dependencies = [
+    "scipy>=1.10",
+    "numpy>=1.23",
+    "pandas>=1.5",
+    "SimpleITK>=2.2",
+    "torch>=1.13",
+    "tensorboard>=2.10",
+]
+
+[project.urls]
+Homepage = "https://github.com/biomedia-mira/blast_ct"
+
+[project.scripts]
+blast-ct = "blast_ct.console_tool:console_tool"
+blast-ct-inference = "blast_ct.inference:inference"
+blast-ct-train = "blast_ct.train:train"
+
+[tool.setuptools.packages.find]
+include = ["blast_ct*"]
+exclude = ["blast_ct.data.saved_models*", "blast_ct.data.scans*"]
+
+[tool.setuptools.package-data]
+"blast_ct" = [
+    "data/config.json",
+    "data/localisation_files/atlas_labels.csv",
+]
+
+[tool.setuptools.exclude-package-data]
+"blast_ct" = [
+    "data/saved_models/*",
+    "data/localisation_files/*.nii.gz",
+    "data/scans/**",
+    "data/data.csv",
+]

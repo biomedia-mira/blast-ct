@@ -1,0 +1,5 @@
+include README.md LICENSE.txt
+recursive-exclude blast_ct/data/saved_models *
+recursive-exclude blast_ct/data/scans *
+exclude blast_ct/data/localisation_files/*.nii.gz
+exclude blast_ct/data/data.csv
